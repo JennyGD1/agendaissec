@@ -369,10 +369,10 @@
             const partesData = data.split('-');
             const dataSelecionada = new Date(partesData[0], partesData[1] - 1, partesData[2]);
 
-            if (dataSelecionada < hoje) {
-                mostrarAlerta("Data Inválida", "Não é permitido realizar agendamentos em datas passadas.");
+            if (dataSelecionada <= hoje) { 
+                mostrarAlerta("Data Inválida", "Agendamentos permitidos apenas a partir de amanhã.");
                 this.value = ''; 
-                container.innerHTML = '<p style="color: #666; font-size: 0.9em;">Selecione uma data futura.</p>';
+                container.innerHTML = '<p style="color: #666; font-size: 0.9em;">Selecione uma data futura (a partir de amanhã).</p>';
                 return;
             }
 
@@ -448,6 +448,7 @@
             const nome = document.getElementById('buscaNome').value;
             const cartao = document.getElementById('numCartao').value;
             const emailInput = document.getElementById('email').value;
+            const dataSelecionada = document.getElementById('filtroData').value; // Necessário para buscar duplicidade
             const user = firebase.auth().currentUser;
 
             if (!user) return mostrarAlerta("Sessão Perdida", "Sua sessão expirou. Faça login novamente.");
@@ -455,31 +456,55 @@
             if (!nome || !cartao) return mostrarAlerta("Beneficiário Inválido", "Preencha os dados do beneficiário corretamente.");
             if (!emailInput) return mostrarAlerta("Email Obrigatório", "Preencha o email do beneficiário.");
 
-            mostrarConfirmacao("Confirmar Agendamento?", async function() {
-                const payload = {
-                    slot_id: slotId, nome: nome, cartao: cartao,
-                    contato: document.getElementById('contato').value,
-                    email: emailInput,
-                    regiao: document.getElementById('regiao').value,
-                    obs: document.getElementById('obs').value,
-                    colaborador: user.email 
-                };
+            try {
+                const headers = await getAuthHeaders();
+                
+                const resDuplicidade = await fetch(`/api/agendamentos?data=${dataSelecionada}`, { headers });
+                const agendamentosDoDia = await resDuplicidade.json();
 
-                try {
-                    const headers = await getAuthHeaders();
-                    const response = await fetch('/api/agendar', {
-                        method: 'POST', headers: headers, body: JSON.stringify(payload)
-                    });
-                    if (response.ok) { 
-                        mostrarAlerta("Sucesso", "Agendamento realizado com sucesso!"); 
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else { 
-                        const erro = await response.json(); 
-                        mostrarAlerta("Erro no Agendamento", 'Erro: ' + (erro.error || 'Falha ao agendar')); 
+                const pacienteJaAgendado = agendamentosDoDia.find(ag => ag.numero_cartao === cartao);
+
+                let mensagemConfirmacao = "Confirmar Agendamento?";
+                
+                if (pacienteJaAgendado) {
+                    mensagemConfirmacao = `O paciente ${pacienteJaAgendado.nome_beneficiario} já está agendado para hoje no horário ${pacienteJaAgendado.horario}. Deseja marcar mesmo assim?`;
+                }
+
+                mostrarConfirmacao(mensagemConfirmacao, async function() {
+                    const payload = {
+                        slot_id: slotId, 
+                        nome: nome, 
+                        cartao: cartao,
+                        contato: document.getElementById('contato').value,
+                        email: emailInput,
+                        regiao: document.getElementById('regiao').value,
+                        obs: document.getElementById('obs').value,
+                        colaborador: user.email 
+                    };
+
+                    try {
+                        const response = await fetch('/api/agendar', {
+                            method: 'POST', headers: headers, body: JSON.stringify(payload)
+                        });
+                        
+                        if (response.ok) { 
+                            mostrarAlerta("Sucesso", "Agendamento realizado com sucesso!"); 
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else { 
+                            const erro = await response.json(); 
+                            mostrarAlerta("Erro no Agendamento", 'Erro: ' + (erro.error || 'Falha ao agendar')); 
+                        }
+                    } catch (error) { 
+                        mostrarAlerta("Erro de Conexão", 'Erro ao conectar com o servidor.'); 
                     }
-                } catch (error) { mostrarAlerta("Erro de Conexão", 'Erro ao conectar com o servidor.'); }
-            });
+                });
+
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta("Erro", "Falha ao verificar duplicidade de horários.");
+            }
         }
+                
     </script>
 </body>
 </html>
