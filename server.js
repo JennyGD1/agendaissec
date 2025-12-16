@@ -281,7 +281,8 @@ app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepc
                 a.observacao, 
                 a.regiao, 
                 a.colaborador_email, 
-                a.status 
+                a.status,
+                a.is_encaixe  
             FROM appointments a
             JOIN slots s ON a.slot_id = s.id
         `;
@@ -300,7 +301,46 @@ app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepc
         res.status(500).json({ error: 'Erro ao buscar agendamentos.' });
     }
 });
+app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+    const client = await pool.connect();
+    const colaborador = req.user.email;
+    const { nome, cartao, hora, contato, regiao, obs } = req.body;
 
+    const hoje = new Date().toISOString().split('T')[0]; 
+    const dataHoraCompleta = `${hoje} ${hora}:00`;
+
+    try {
+        await client.query('BEGIN');
+
+        let slotResult = await client.query(
+            `INSERT INTO slots (data_hora, disponivel) 
+             VALUES ($1, FALSE) 
+             ON CONFLICT (data_hora) DO UPDATE SET disponivel = FALSE 
+             RETURNING id`,
+            [dataHoraCompleta]
+        );
+        
+        const slotId = slotResult.rows[0].id;
+
+        const insertQuery = `
+            INSERT INTO appointments 
+            (slot_id, nome_beneficiario, numero_cartao, contato, email_contato, regiao, observacao, colaborador_email, status, is_encaixe)
+            VALUES ($1, $2, $3, $4, 'encaixe@recepcao', $5, $6, $7, 'Agendado', TRUE) 
+            RETURNING id
+        `;
+        
+        await client.query(insertQuery, [slotId, nome, cartao, contato, regiao, obs, colaborador]);
+        
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Encaixe realizado com sucesso!' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao realizar encaixe.' });
+    } finally {
+        client.release();
+    }
+});
 app.delete('/api/agendamentos/:id', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const client = await pool.connect();
     const id = req.params.id;
@@ -371,6 +411,53 @@ app.get('/api/alertas/pendencias', verificarAuth, verificarPermissao(['admin', '
     }
 });
 
+app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+    const { inicio, fim } = req.query;
+
+    if (!inicio || !fim) {
+        return res.status(400).json({ error: 'Datas de início e fim são obrigatórias.' });
+    }
+
+    try {
+        const query = `
+            SELECT 
+                to_char(s.data_hora, 'DD/MM/YYYY') as data_formatada,
+                to_char(s.data_hora, 'HH24:MI') as hora,
+                s.data_hora,
+                a.nome_beneficiario,
+                a.numero_cartao,
+                a.regiao,
+                a.status,
+                a.is_encaixe,
+                a.observacao
+            FROM appointments a
+            JOIN slots s ON a.slot_id = s.id
+            WHERE s.data_hora::date BETWEEN $1 AND $2
+            AND a.status IN ('Atendido', 'Não Compareceu') 
+            ORDER BY s.data_hora ASC
+        `;
+
+        const result = await pool.query(query, [inicio, fim]);
+        const rows = result.rows;
+
+        const stats = {
+            total: rows.length,
+            atendidos: rows.filter(r => r.status === 'Atendido').length,
+            nao_compareceu: rows.filter(r => r.status === 'Não Compareceu').length,
+            regiao: {
+                capital: rows.filter(r => r.regiao === 'Capital').length,
+                interior: rows.filter(r => r.regiao === 'Interior').length,
+                metropolitana: rows.filter(r => r.regiao === 'Metropolitana').length
+            },
+            lista_detalhada: rows 
+        };
+
+        res.json(stats);
+    } catch (error) {
+        console.error("Erro relatorio:", error);
+        res.status(500).json({ error: 'Erro ao gerar relatório.' });
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

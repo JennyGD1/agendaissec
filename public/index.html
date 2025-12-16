@@ -286,8 +286,8 @@
             max-width: 140px;
         }
 
-        .status-select.agendado { background-color: #e3f2fd; color: #0d47a1; }
-        .status-select.aguardando { background-color: #fff8e1; color: #f57f17; }
+        .status-select.agendado { background-color: #fff8e1; color: #f57f17; }
+        .status-select.aguardando { background-color: #e3f2fd; color: #0d47a1; }
         .status-select.atendido { background-color: #e8f5e9; color: #1b5e20; }
         .status-select.nao-compareceu { background-color: #ffebee; color: #b71c1c; }
 
@@ -338,6 +338,38 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+        .fab-encaixe {
+            position: fixed;
+            bottom: 30px;
+            left: 30px; /* Canto inferior esquerdo */
+            background-color: #28a745; /* Verde destaque */
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: none; /* Oculto por padrão, ativado via JS */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .fab-encaixe:hover { transform: scale(1.1); background-color: #218838; }
+        .fab-encaixe svg { width: 30px; height: 30px; }
+
+        /* Ícone de Encaixe na Tabela */
+        .badge-encaixe {
+            background-color: #ffc107;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+            border: 1px solid #e0a800;
+        }
         nav .logo img { height: 40px; width: auto; }
         .modal-title-custom { font-size: 1.25rem; font-weight: bold; margin-bottom: 10px; color: #333; }
         .modal-body-custom { font-size: 1rem; color: #555; margin-bottom: 25px; line-height: 1.5; white-space: pre-wrap; }
@@ -351,6 +383,54 @@
 
         .modal-close-icon { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; }
         .modal-close-icon:hover { color: #333; }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-left: 20px;
+        }
+
+        .dropbtn {
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .dropbtn:hover { color: white; }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 180px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.15);
+            z-index: 100;
+            border-radius: 6px;
+            overflow: hidden;
+            top: 100%;
+            left: 0;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            margin-left: 0; /* Override do estilo global */
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .dropdown:hover .dropdown-content { display: block; }
 
     </style>
 </head>
@@ -361,8 +441,18 @@
         </div>
         <div class="user-info">
             <span id="user-display">Carregando...</span>
+            
             <a href="agendar.html">Novo Agendamento</a>
+            
             <a href="gerenciar.html" id="link-gerenciar" style="display: none;">Gerenciar Horários</a>
+
+            <div class="dropdown" id="menu-funcoes" style="display: none;"> <button class="dropbtn">Funções</button>
+                <div class="dropdown-content">
+                    <a href="relatorios.html">Relatório do Período</a>
+                    <a href="#">Outra Função Futura</a>
+                </div>
+            </div>
+
             <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -478,6 +568,63 @@
             <div id="modalObsTexto" class="modal-body-custom" style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #eee; text-align:left;"></div>
         </div>
     </div>
+    <button id="btnEncaixe" class="fab-encaixe" onclick="abrirModalEncaixe()" title="Realizar Encaixe (Hoje)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+    </button>
+
+    <div id="modalEncaixe" class="modal-overlay-custom">
+        <div class="modal-content-custom" style="max-width: 500px; text-align: left;">
+            <button class="modal-close-icon" onclick="fecharModal('modalEncaixe')">×</button>
+            <div class="modal-title-custom" style="text-align: center;"> Novo Encaixe (Hoje)</div>
+            
+            <div style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Horário:</label>
+                    <input type="time" id="encaixeHora" class="input-moderno" style="width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 5px;">
+                </div>
+
+                <div style="margin-bottom: 15px; position: relative;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Nome do Beneficiário:</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="encaixeNome" placeholder="Buscar nome..." class="input-moderno" style="width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 5px;">
+                        <button onclick="buscarEncaixeApi()" style="background: #17a2b8; color: white; border: none; border-radius: 5px; padding: 0 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Buscar">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+</button>
+                    </div>
+                    <ul id="listaSugestoesEncaixe" style="list-style: none; padding: 0; margin: 0; border: 1px solid #ddd; display: none; max-height: 100px; overflow-y: auto; background: white; width: 100%; position: absolute; z-index: 10; border-radius: 4px;"></ul>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Carteirinha:</label>
+                    <input type="text" id="encaixeCartao" readonly style="width: 100%; background: #eee; border: 1px solid #ccc; padding: 8px; border-radius: 5px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Telefone:</label>
+                    <input type="text" id="encaixeContato" class="input-moderno" style="width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 5px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Região:</label>
+                    <select id="encaixeRegiao" style="width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 5px;">
+                        <option value="Capital">Capital</option>
+                        <option value="Metropolitana">Metropolitana</option>
+                        <option value="Interior">Interior</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Observação:</label>
+                    <textarea id="encaixeObs" rows="2" style="width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 5px;"></textarea>
+                </div>
+
+                <button onclick="salvarEncaixe()" style="width: 100%; background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Confirmar Encaixe</button>
+            </div>
+        </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script>
@@ -520,6 +667,12 @@
                     if (userRole === 'admin') {
                         document.getElementById('link-gerenciar').style.display = 'inline';
                     }
+                    
+                    if (userRole === 'admin' || userRole === 'recepcao') {
+                        document.getElementById('btnEncaixe').style.display = 'flex';
+                        document.getElementById('menu-funcoes').style.display = 'inline-block';
+                    }
+
                     verificarPendencias(); 
                 }
             } catch (error) { console.error("Erro user role", error); }
@@ -543,6 +696,88 @@
 
 
         // --- SISTEMA DE MODAIS ---
+        function abrirModalEncaixe() {
+            // Define a hora atual como padrão
+            const agora = new Date();
+            const horaFormatada = agora.toTimeString().substring(0,5);
+            document.getElementById('encaixeHora').value = horaFormatada;
+            document.getElementById('modalEncaixe').style.display = 'flex';
+        }
+
+        async function buscarEncaixeApi() {
+            const nome = document.getElementById('encaixeNome').value;
+            const lista = document.getElementById('listaSugestoesEncaixe');
+            if(nome.length < 3) return;
+
+            lista.style.display = 'block';
+            lista.innerHTML = '<li style="padding:5px;">Buscando...</li>';
+
+            try {
+                const response = await fetch(`/api/buscar-beneficiario?nome=${encodeURIComponent(nome)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                lista.innerHTML = '';
+                
+                if (data.content && data.content.length > 0) {
+                    data.content.forEach(p => {
+                        const li = document.createElement('li');
+                        li.style.padding = '8px';
+                        li.style.cursor = 'pointer';
+                        li.style.borderBottom = '1px solid #eee';
+                        li.innerHTML = `<strong>${p.nome}</strong><br><small>${p.numeroCartao || 'S/ Cartão'}</small>`;
+                        li.onclick = () => {
+                            document.getElementById('encaixeNome').value = p.nome;
+                            document.getElementById('encaixeCartao').value = p.numeroCartao || '';
+                            lista.style.display = 'none';
+                        };
+                        lista.appendChild(li);
+                    });
+                } else {
+                    lista.innerHTML = '<li style="padding:5px;">Nenhum encontrado</li>';
+                }
+            } catch (e) {
+                lista.innerHTML = '<li style="padding:5px; color:red">Erro na busca</li>';
+            }
+        }
+
+        async function salvarEncaixe() {
+            const hora = document.getElementById('encaixeHora').value;
+            const nome = document.getElementById('encaixeNome').value;
+            const cartao = document.getElementById('encaixeCartao').value;
+            
+            if(!hora || !nome || !cartao) {
+                return alert("Preencha Hora, Nome e selecione um Beneficiário.");
+            }
+
+            const payload = {
+                hora, nome, cartao,
+                contato: document.getElementById('encaixeContato').value,
+                regiao: document.getElementById('encaixeRegiao').value,
+                obs: document.getElementById('encaixeObs').value
+            };
+
+            try {
+                const response = await fetch('/api/encaixe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+
+                if(response.ok) {
+                    alert("Encaixe realizado com sucesso!");
+                    fecharModal('modalEncaixe');
+                    // Força recarregar para hoje
+                    document.getElementById('filtroData').value = new Date().toISOString().split('T')[0];
+                    carregarAgendamentos();
+                } else {
+                    const erro = await response.json();
+                    alert("Erro: " + erro.error);
+                }
+            } catch (e) {
+                alert("Erro de conexão");
+            }
+        }
         function exibirModal(titulo, mensagem, callbackConfirmacao = null) {
             const modal = document.getElementById('modalSistema');
             const tituloEl = document.getElementById('modalTitulo');
@@ -647,6 +882,10 @@
                     if (filtroStatusAtual && statusNormalizado !== filtroStatusAtual) return;
 
                     const tr = document.createElement('tr');
+                    let displayNome = item.nome_beneficiario;
+                    if (item.is_encaixe) {
+                        displayNome += ` <span class="badge-encaixe" title="Encaixe realizado pela recepção">Encaixe</span>`;
+                    }
                     const classeStatus = statusNormalizado.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
                     
                     let btnObs = '-';
@@ -666,8 +905,8 @@
                     const disabled = (userRole !== 'admin' && userRole !== 'recepcao') ? 'disabled' : '';
 
                     tr.innerHTML = `
-                        <td style="font-weight:bold;">${item.horario}</td>
-                        <td>${item.nome_beneficiario}</td>
+                        <td style="font-weight:bold; white-space: nowrap;">${item.horario}</td>
+                        <td style="min-width: 200px;">${displayNome}</td>
                         <td>${item.numero_cartao}</td>
                         <td>${item.contato}</td>
                         <td>${item.regiao}</td>
