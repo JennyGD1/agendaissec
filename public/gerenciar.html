@@ -252,7 +252,7 @@
                 }
                 
                 const token = await user.getIdToken();
-                const response = await fetch('http://localhost:3000/api/user-role', {
+                const response = await fetch('/api/user-role', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -419,7 +419,7 @@
             mostrarConfirmacao(`Deseja salvar ${listaNovosHorarios.length} horários para a data ${data}?`, async function() {
                 try {
                     const headers = await getAuthHeaders();
-                    const response = await fetch('http://localhost:3000/api/admin/criar-horarios', {
+                    const response = await fetch('/api/admin/criar-horarios', {
                         method: 'POST', headers: headers,
                         body: JSON.stringify({ data: data, horarios: listaNovosHorarios })
                     });
@@ -445,7 +445,7 @@
             document.getElementById('loadingExistentes').style.display = 'block';
             try {
                 const headers = await getAuthHeaders();
-                const response = await fetch(`http://localhost:3000/api/admin/slots?data=${data}`, { headers });
+                const response = await fetch(`/api/admin/slots?data=${data}`, { headers });
                 const slots = await response.json();
                 document.getElementById('loadingExistentes').style.display = 'none';
                 if (slots.length === 0) { ul.innerHTML = '<p class="aviso-selecao">Nenhum horário cadastrado nesta data.</p>'; return; }
@@ -476,7 +476,7 @@
             mostrarConfirmacao("Tem certeza que deseja excluir este horário permanentemente?", async function() {
                 try {
                     const headers = await getAuthHeaders();
-                    const response = await fetch(`http://localhost:3000/api/admin/slots/${id}`, {
+                    const response = await fetch(`/api/admin/slots/${id}`, {
                         method: 'DELETE', headers: headers
                     });
                     const res = await response.json();

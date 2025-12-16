@@ -509,7 +509,7 @@
 
         async function obterDadosUsuario() {
             try {
-                const response = await fetch('http://localhost:3000/api/user-role', {
+                const response = await fetch('/api/user-role', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {
@@ -604,7 +604,7 @@
             try {
                 if (userRole !== 'admin' && userRole !== 'recepcao') return;
                 
-                const response = await fetch('http://localhost:3000/api/alertas/pendencias', { headers: { 'Authorization': `Bearer ${token}` } });
+                const response = await fetch('/api/alertas/pendencias', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await response.json();
                 
                 const alerta = document.getElementById('alerta-pendencias');
@@ -699,7 +699,7 @@
             const classe = novoStatus.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
             selectElement.className = `status-select ${classe}`;
             try {
-                const response = await fetch(`http://localhost:3000/api/agendamentos/${id}/status`, {
+                const response = await fetch(`/api/agendamentos/api/agendamentos/${id}/status`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ status: novoStatus })
                 });
@@ -711,7 +711,7 @@
         function cancelarAgendamento(id) {
             exibirModal('Confirmar Cancelamento', 'Tem certeza que deseja cancelar este agendamento? O horário ficará livre novamente.', async () => {
                 try {
-                    const response = await fetch(`http://localhost:3000/api/agendamentos/${id}`, {
+                    const response = await fetch(`/api/agendamentos/api/agendamentos/${id}`, {
                         method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                     });
                     if (response.ok) {
