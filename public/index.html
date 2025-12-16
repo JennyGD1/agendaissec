@@ -625,7 +625,7 @@
             const dataSelecionada = document.getElementById('filtroData').value;
             const termoBusca = document.getElementById('buscaGeral').value.toLowerCase();
             try {
-                const response = await fetch(`http://localhost:3000/api/agendamentos?data=${dataSelecionada}`, {
+                const response = await fetch(`/api/agendamentos?data=${dataSelecionada}`, {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
                 if (response.status === 401 || response.status === 403) { logout(); return; }
