@@ -1,0 +1,292 @@
+/* --- RESET E GERAL --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9; /* Cinza bem claro de fundo */
+    color: #333;
+}
+
+/* --- NAVBAR --- */
+nav {
+    background-color: #0061f2; /* Azul Maida */
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+nav .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+nav .user-info {
+    font-size: 0.9rem;
+}
+
+nav a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* --- LAYOUT PRINCIPAL --- */
+main {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* --- CARDS (DASHBOARD) --- */
+.cards-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: white;
+    flex: 1;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card span {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #2c3e50;
+}
+
+.card.total { border-color: #0061f2; }
+.card.reservado { border-color: #28a745; }
+.card.aguardando { border-color: #ffc107; }
+.card.nao-compareceu { border-color: #dc3545; }
+
+/* --- FILTROS --- */
+.filtros-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.filtros-container input, 
+.filtros-container select {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.filtros-container button {
+    background-color: #343a40;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* --- TABELA --- */
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- STATUS BADGES --- */
+.status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status.aguardando { background-color: #fff3cd; color: #856404; }
+.status.atendido { background-color: #d4edda; color: #155724; }
+.status.cancelado { background-color: #f8d7da; color: #721c24; }
+
+/* --- PÁGINAS DE FORMULÁRIO (AGENDAR/GERENCIAR) --- */
+.container-form {
+    display: flex;
+    gap: 20px;
+}
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+    .container-form {
+        flex-direction: column;
+    }
+}
+
+.painel {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    flex: 1;
+}
+
+h2, h3 {
+    color: #0061f2;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    border-color: #0061f2;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,97,242,0.1);
+}
+
+/* --- LISTA DE SUGESTÕES (AUTOCOMPLETE) --- */
+.sugestoes-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ced4da;
+    border-top: none;
+    display: none;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    position: absolute;
+    width: 90%; /* Ajuste fino */
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 4px 4px;
+}
+
+.sugestoes-lista li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.sugestoes-lista li:hover {
+    background-color: #f1f3f5;
+    color: #0061f2;
+}
+
+/* --- GRADE DE HORÁRIOS --- */
+.grade-horarios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.btn-horario {
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-horario:hover {
+    border-color: #0061f2;
+    color: #0061f2;
+}
+
+.btn-horario.selecionado {
+    background-color: #0061f2;
+    color: white;
+    border-color: #0061f2;
+}
+
+/* --- BOTÕES GERAIS --- */
+.btn-salvar {
+    background-color: #0061f2;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-salvar:hover {
+    background-color: #004ab5;
+}
+
+.btn-salvar:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
