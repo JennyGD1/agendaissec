@@ -448,7 +448,6 @@
             const nome = document.getElementById('buscaNome').value;
             const cartao = document.getElementById('numCartao').value;
             const emailInput = document.getElementById('email').value;
-            const dataSelecionada = document.getElementById('filtroData').value; // Necessário para buscar duplicidade
             const user = firebase.auth().currentUser;
 
             if (!user) return mostrarAlerta("Sessão Perdida", "Sua sessão expirou. Faça login novamente.");
@@ -459,15 +458,21 @@
             try {
                 const headers = await getAuthHeaders();
                 
-                const resDuplicidade = await fetch(`/api/agendamentos?data=${dataSelecionada}`, { headers });
-                const agendamentosDoDia = await resDuplicidade.json();
+                const resDuplicidade = await fetch(`/api/agendamentos`, { headers }); 
+                const todosAgendamentos = await resDuplicidade.json();
 
-                const pacienteJaAgendado = agendamentosDoDia.find(ag => ag.numero_cartao === cartao);
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                const conflitoFuturo = todosAgendamentos.find(ag => {
+                    const dataAgendamento = new Date(ag.data_hora); 
+                    return (ag.numero_cartao === cartao) && (dataAgendamento >= hoje);
+                });
 
                 let mensagemConfirmacao = "Confirmar Agendamento?";
                 
-                if (pacienteJaAgendado) {
-                    mensagemConfirmacao = `O paciente ${pacienteJaAgendado.nome_beneficiario} já está agendado para hoje no horário ${pacienteJaAgendado.horario}. Deseja marcar mesmo assim?`;
+                if (conflitoFuturo) {
+                    mensagemConfirmacao = `O paciente ${conflitoFuturo.nome_beneficiario} já possui um agendamento no dia ${conflitoFuturo.data_formatada} às ${conflitoFuturo.horario}. Deseja marcar este novo horário mesmo assim?`;
                 }
 
                 mostrarConfirmacao(mensagemConfirmacao, async function() {
@@ -501,7 +506,7 @@
 
             } catch (error) {
                 console.error(error);
-                mostrarAlerta("Erro", "Falha ao verificar duplicidade de horários.");
+                mostrarAlerta("Erro", "Falha ao verificar histórico de agendamentos.");
             }
         }
                 
