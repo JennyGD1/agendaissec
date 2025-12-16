@@ -699,7 +699,7 @@
             const classe = novoStatus.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
             selectElement.className = `status-select ${classe}`;
             try {
-                const response = await fetch(`/api/agendamentos/api/agendamentos/${id}/status`, {
+                const response = await fetch(`/api/agendamentos${id}/status`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ status: novoStatus })
                 });
@@ -711,7 +711,7 @@
         function cancelarAgendamento(id) {
             exibirModal('Confirmar Cancelamento', 'Tem certeza que deseja cancelar este agendamento? O horário ficará livre novamente.', async () => {
                 try {
-                    const response = await fetch(`/api/agendamentos/api/agendamentos/${id}`, {
+                    const response = await fetch(`/api/agendamentos/${id}`, {
                         method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                     });
                     if (response.ok) {
