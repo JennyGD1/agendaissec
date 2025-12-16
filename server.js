@@ -7,6 +7,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const admin = require('firebase-admin');
 
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim()) : [];
+const RECEPCAO_EMAILS = process.env.RECEPCAO_EMAILS ? process.env.RECEPCAO_EMAILS.split(',').map(e => e.trim()) : [];
+const CLIENT_EMAILS = process.env.CLIENT_EMAILS ? process.env.CLIENT_EMAILS.split(',').map(e => e.trim()) : [];
+
 try {
     if (process.env.FIREBASE_PRIVATE_KEY) {
         admin.initializeApp({
@@ -33,6 +37,7 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+
 const verificarAuth = async (req, res, next) => {
     if (!admin.apps.length) return next();
 
@@ -44,22 +49,20 @@ const verificarAuth = async (req, res, next) => {
     try {
         const idToken = authHeader.split('Bearer ')[1];
         const decodedToken = await admin.auth().verifyIdToken(idToken);
-        
-        if (!decodedToken.email.endsWith('@maida.health')) {
-             return res.status(403).json({ error: 'Domínio não autorizado.' });
+        const userEmail = decodedToken.email;
+
+        const isMaida = userEmail.endsWith('@maida.health');
+        const isClient = CLIENT_EMAILS.includes(userEmail);
+
+        if (!isMaida && !isClient) {
+             return res.status(403).json({ error: 'Domínio/Usuário não autorizado.' });
         }
 
-        const userEmail = decodedToken.email;
-        let role = 'geral';
-        
-        const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : [];
-        const recepcaoEmails = process.env.RECEPCAO_EMAILS ? process.env.RECEPCAO_EMAILS.split(',') : [];
-        
-        if (adminEmails.includes(userEmail)) {
-            role = 'admin';
-        } else if (recepcaoEmails.includes(userEmail)) {
-            role = 'recepcao';
-        }
+        let role = 'guest';
+        if (ADMIN_EMAILS.includes(userEmail)) role = 'admin';
+        else if (RECEPCAO_EMAILS.includes(userEmail)) role = 'recepcao';
+        else if (isClient) role = 'cliente';
+        else if (isMaida) role = 'call_center';
         
         req.user = { ...decodedToken, role };
         next();
@@ -69,19 +72,43 @@ const verificarAuth = async (req, res, next) => {
     }
 };
 
-const verificarPermissao = (rolesPermitidos) => {
+const verificarPermissao = (cargosPermitidos) => {
     return (req, res, next) => {
-        if (!req.user) {
-            return res.status(401).json({ error: 'Usuário não autenticado.' });
+        const email = req.user.email;
+        let cargo = 'indefinido';
+
+        if (ADMIN_EMAILS.includes(email)) {
+            cargo = 'admin';
+        } else if (RECEPCAO_EMAILS.includes(email)) {
+            cargo = 'recepcao';
+        } else if (CLIENT_EMAILS.includes(email)) {
+            cargo = 'cliente';
+        } else if (email.endsWith('@maida.health')) {
+            cargo = 'call_center';
         }
-        
-        if (rolesPermitidos.includes(req.user.role)) {
-            next();
-        } else {
-            res.status(403).json({ error: 'Acesso não autorizado para este perfil.' });
+
+        req.user.cargo = cargo;
+
+        if (cargosPermitidos.includes(cargo)) {
+            return next();
         }
+
+        return res.status(403).json({ error: 'Acesso negado para seu perfil: ' + cargo });
     };
 };
+
+
+app.get('/api/me', verificarAuth, (req, res) => {
+    const email = req.user.email;
+    let role = 'guest';
+
+    if (ADMIN_EMAILS.includes(email)) role = 'admin';
+    else if (RECEPCAO_EMAILS.includes(email)) role = 'recepcao';
+    else if (CLIENT_EMAILS.includes(email)) role = 'cliente';
+    else if (email.endsWith('@maida.health')) role = 'call_center';
+
+    res.json({ email, role });
+});
 
 app.get('/api/firebase-config', (req, res) => {
     res.json({
@@ -124,7 +151,7 @@ app.get('/api/user-role', verificarAuth, (req, res) => {
     res.json({ role: req.user.role, email: req.user.email });
 });
 
-app.get('/api/buscar-beneficiario', verificarAuth, verificarPermissao(['admin', 'recepcao', 'geral']), async (req, res) => {
+app.get('/api/buscar-beneficiario', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center', 'cliente']), async (req, res) => {
     const nomeBusca = req.query.nome;
 
     if (!nomeBusca) {
@@ -150,7 +177,7 @@ app.get('/api/buscar-beneficiario', verificarAuth, verificarPermissao(['admin', 
     }
 });
 
-app.get('/api/slots-disponiveis', verificarAuth, verificarPermissao(['admin', 'recepcao', 'geral']), async (req, res) => {
+app.get('/api/slots-disponiveis', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center', 'cliente']), async (req, res) => {
     const { data } = req.query;
     if (!data) return res.status(400).json({ error: 'Data obrigatória.' });
 
@@ -168,7 +195,7 @@ app.get('/api/slots-disponiveis', verificarAuth, verificarPermissao(['admin', 'r
     }
 });
 
-app.get('/api/admin/slots', verificarAuth, verificarPermissao(['admin']), async (req, res) => {
+app.get('/api/admin/slots', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const { data } = req.query;
     if (!data) return res.status(400).json({ error: 'Data obrigatória.' });
 
@@ -185,30 +212,41 @@ app.get('/api/admin/slots', verificarAuth, verificarPermissao(['admin']), async 
     }
 });
 
-app.post('/api/admin/criar-horarios', verificarAuth, verificarPermissao(['admin']), async (req, res) => {
-    const { data, horarios } = req.body;
-    const client = await pool.connect();
+app.post('/api/admin/slots', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+    const { datas, slots } = req.body; 
 
+    if (!datas || !Array.isArray(datas) || datas.length === 0 || !slots || slots.length === 0) {
+        return res.status(400).json({ error: 'Datas e horários são obrigatórios.' });
+    }
+
+    const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        for (const hora of horarios) {
-            const dataHoraFormatada = `${data} ${hora}:00`;
-            await client.query(
-                'INSERT INTO slots (data_hora, disponivel) VALUES ($1, TRUE) ON CONFLICT DO NOTHING',
-                [dataHoraFormatada]
-            );
+
+        for (const dataIso of datas) {
+            for (const hora of slots) {
+                const dataHora = `${dataIso} ${hora}:00`;
+                
+                await client.query(`
+                    INSERT INTO slots (data_hora) 
+                    VALUES ($1) 
+                    ON CONFLICT (data_hora) DO NOTHING
+                `, [dataHora]);
+            }
         }
+
         await client.query('COMMIT');
-        res.json({ success: true, message: 'Horários criados!' });
+        res.json({ message: 'Horários criados com sucesso para os dias selecionados.' });
     } catch (error) {
-        await client.query('ROLLBACK');
-        res.status(500).json({ error: 'Erro ao criar horários: ' + error.message });
+        await client.query('ROLLBACK'); 
+        console.error("Erro criar slots:", error);
+        res.status(500).json({ error: 'Erro ao criar horários.' });
     } finally {
         client.release();
     }
 });
 
-app.delete('/api/admin/slots/:id', verificarAuth, verificarPermissao(['admin']), async (req, res) => {
+app.delete('/api/admin/slots/:id', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const { id } = req.params;
     const client = await pool.connect();
 
@@ -232,7 +270,7 @@ app.delete('/api/admin/slots/:id', verificarAuth, verificarPermissao(['admin']),
     }
 });
 
-app.post('/api/agendar', verificarAuth, verificarPermissao(['admin', 'recepcao', 'geral']), async (req, res) => {
+app.post('/api/agendar', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center']), async (req, res) => {
     const client = await pool.connect();
     const colaborador = req.user ? req.user.email : req.body.colaborador;
     const { slot_id, nome, cartao, contato, email, regiao, obs } = req.body;
@@ -266,7 +304,7 @@ app.post('/api/agendar', verificarAuth, verificarPermissao(['admin', 'recepcao',
     }
 });
 
-app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepcao', 'geral']), async (req, res) => {
+app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center', 'cliente']), async (req, res) => {
     const { data } = req.query;
     try {
         let query = `
@@ -301,6 +339,7 @@ app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepc
         res.status(500).json({ error: 'Erro ao buscar agendamentos.' });
     }
 });
+
 app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const client = await pool.connect();
     const colaborador = req.user.email;
@@ -341,6 +380,7 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
         client.release();
     }
 });
+
 app.delete('/api/agendamentos/:id', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const client = await pool.connect();
     const id = req.params.id;
@@ -411,7 +451,7 @@ app.get('/api/alertas/pendencias', verificarAuth, verificarPermissao(['admin', '
     }
 });
 
-app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center', 'cliente']), async (req, res) => {
     const { inicio, fim } = req.query;
 
     if (!inicio || !fim) {
@@ -458,8 +498,10 @@ app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao
         res.status(500).json({ error: 'Erro ao gerar relatório.' });
     }
 });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+
 module.exports = app;

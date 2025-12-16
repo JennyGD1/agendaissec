@@ -6,490 +6,552 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Horários - Maida</title>
     <style>
-        /* --- CORREÇÃO DE ESTILO (PADRONIZAÇÃO) --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f5f7fb; color: #333; min-height: 100vh; }
 
-        body {
-            background-color: #f5f7fb; /* Fundo cinza claro igual ao Index */
-            color: #333;
-            min-height: 100vh;
-        }
-        /* ----------------------------------------- */
-
+        /* NAV */
         nav { background-color: #0066cc; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        nav .logo { font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        nav .user-info { display: flex; align-items: center; }
+        nav .logo { display: flex; align-items: center; }
         nav .logo img { height: 40px; width: auto; }
         
-        .btn-logout { background: none; border: none; cursor: pointer; margin-left: 20px; display: flex; align-items: center; opacity: 0.8; transition: opacity 0.2s; padding: 5px; }
-        .btn-logout:hover { opacity: 1; }
-        .btn-logout svg { stroke: white; width: 20px; height: 20px; }
+        .btn-voltar { 
+            background-color: #4da6ff; 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: bold;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-voltar:hover { background-color: #80bfff; text-decoration: none; transform: translateY(-1px); }
 
-        .header-actions {
-            max-width: 1200px;
-            margin: 30px auto 20px auto;
+        /* LAYOUT */
+        main { 
+            max-width: 1200px; 
+            margin: 30px auto; 
             padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            display: flex; 
+            gap: 25px;     
+            flex-wrap: wrap; 
+            align-items: flex-start;
         }
 
-        .btn-voltar {
-            display: inline-flex; align-items: center; gap: 8px;
-            background-color: #6c757d; 
-            color: white; padding: 10px 20px;
-            text-decoration: none; border-radius: 6px;
-            font-weight: 500; border: none; font-size: 0.95rem;
-            transition: background 0.2s;
-        }
-        .btn-voltar:hover { background-color: #545b62; }
-
-        .painel-data-inline {
-            background: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Sombra suavizada */
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border: 1px solid #eef0f5;
-        }
-
-        .input-moderno {
-            padding: 8px 12px; border: 1px solid #ced4da;
-            border-radius: 6px; font-size: 0.95rem; outline: none;
-            transition: border-color 0.2s; background: #fff;
-        }
-        .input-moderno:focus { border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0,102,204,0.1); }
-
-        .container-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto 40px auto; padding: 0 20px; }
-        
-        .painel-admin { 
+        .panel { 
             background: white; 
             padding: 30px; 
-            border-radius: 12px; /* Arredondamento igual ao Index */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); 
-            border: 1px solid #eef0f5;
-        }
-        
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
-        .input-wrapper { flex: 1; }
-        .input-wrapper label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 0.9rem; }
-        
-        .btn-add { 
-            background-color: #28a745; color: white; border: none; 
-            padding: 10px 20px; border-radius: 6px; cursor: pointer; 
-            height: 40px;
-            font-weight: bold; font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-        .btn-add:hover { background-color: #218838; }
-
-        .btn-auto {
-            background-color: #17a2b8; color: white; border: none; 
-            padding: 10px 20px; border-radius: 6px; cursor: pointer; 
-            height: 40px;
-            font-weight: bold; font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-        .btn-auto:hover { background-color: #138496; }
-
-        .btn-salvar { background-color: #0066cc; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 20px; font-weight: bold; transition: background 0.2s; }
-        .btn-salvar:hover { background-color: #0056b3; }
-        .btn-salvar:disabled { background-color: #ccc; cursor: not-allowed; }
-
-        .lista-horarios { list-style: none; padding: 0; margin: 20px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        
-        .tag-horario { 
-            padding: 8px 10px; border-radius: 6px; text-align: center; 
-            font-weight: 600; display: flex; justify-content: space-between; 
-            align-items: center; font-size: 0.9rem; 
-        }
-        
-        .tag-horario.novo { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .tag-horario.existente { background-color: #f8f9fa; color: #333; border: 1px solid #dee2e6; } /* Suavizado */
-        
-        .tag-horario.ocupado { 
-            background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; 
-            cursor: not-allowed; opacity: 0.9;
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            flex: 1; 
+            min-width: 350px; 
         }
 
-        .btn-remove { background: none; border: none; cursor: pointer; font-weight: bold; margin-left: 5px; font-size: 14px; display: flex; align-items: center; opacity: 0.6; transition: opacity 0.2s; }
-        .btn-remove:hover { opacity: 1; }
-        .icon-lock { font-size: 14px; margin-left: 8px; color: #856404; }
-
-        h3 { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 25px; color: #333; font-size: 1.1rem; font-weight: 700; }
-        .aviso-selecao { color: #666; font-style: italic; text-align: center; margin-top: 50px;}
+        h2 { 
+            color: #0066cc; 
+            margin-bottom: 25px; 
+            font-size: 1.3rem; 
+            border-bottom: 2px solid #f0f2f5; 
+            padding-bottom: 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
         
-        @media (max-width: 768px) { 
-            .container-admin { grid-template-columns: 1fr; } 
-            .header-actions { flex-direction: column; align-items: stretch; }
-            .painel-data-inline { justify-content: space-between; }
+        h2 svg { width: 24px; height: 24px; stroke: #0066cc; stroke-width: 2; }
+
+        /* FORMULÁRIOS */
+        .form-row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .input-group { flex: 1; min-width: 150px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #555; }
+        input[type="date"], input[type="time"] { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+        input[type="date"]:focus, input[type="time"]:focus { border-color: #0066cc; }
+
+        /* DIAS DA SEMANA */
+        .weekdays-selector { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .weekday-item { 
+            display: flex; align-items: center; gap: 6px; 
+            background: #f8f9fa; padding: 8px 12px; 
+            border-radius: 20px; border: 1px solid #e9ecef; 
+            cursor: pointer; user-select: none; transition: 0.2s; 
+            font-size: 0.85rem; font-weight: 500;
+        }
+        .weekday-item:hover { background-color: #e2e6ea; }
+        .weekday-item input { accent-color: #0066cc; width: 16px; height: 16px; cursor: pointer; }
+
+        /* GRADE DE HORÁRIOS */
+        .grid-horarios { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            max-height: 300px; 
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid #f0f2f5; 
+            border-radius: 8px;
+        }
+        .hora-check { display: none; }
+        .hora-label {
+            display: block; text-align: center; padding: 8px; 
+            background: #fff; border: 1px solid #ced4da; 
+            border-radius: 6px; cursor: pointer; font-size: 0.9rem; 
+            transition: all 0.2s; user-select: none;
+            color: #495057;
+        }
+        .hora-check:checked + .hora-label { 
+            background-color: #0066cc; color: white; 
+            border-color: #0066cc; box-shadow: 0 4px 8px rgba(0,102,204,0.3);
+            font-weight: bold; transform: translateY(-2px);
         }
 
-        /* MODAIS */
-        .modal-overlay {
+        /* MANUAL ADD */
+        .manual-add-container {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px dashed #ced4da;
+        }
+        .manual-row { display: flex; gap: 10px; align-items: flex-end; }
+        
+        /* BOTÃO MANUAL AJUSTADO (SEM FUNDO VERDE, COM BORDA AZUL) */
+        .btn-add-manual {
+            background-color: transparent; 
+            color: #0066cc; 
+            border: 2px solid #0066cc;
+            padding: 8px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: bold; 
+            font-size: 1.5rem; 
+            line-height: 1;
+            width: 50px;
+            height: 46px; /* Altura para alinhar com o input */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-add-manual:hover { 
+            background-color: #e3f2fd; /* Fundo azul bem claro no hover */
+            border-color: #0056b3;
+            color: #0056b3;
+        }
+
+        /* BOTÕES */
+        .btn-action { 
+            width: 100%; padding: 14px; border: none; border-radius: 8px; 
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-save { background-color: #0066cc; color: white; }
+        .btn-save:hover { background-color: #0056b3; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,102,204,0.3); }
+
+        /* LISTA DE EXISTENTES */
+        .lista-existentes { 
+            list-style: none; display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 12px; padding: 0; 
+        }
+        .slot-item { 
+            background: white; border: 1px solid #e9ecef; 
+            padding: 10px; border-radius: 8px; text-align: center; 
+            position: relative; font-weight: 500; color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .slot-item.ocupado { background-color: #fff3cd; border-color: #ffeeba; color: #856404; }
+        .slot-item.livre { background-color: #e8f5e9; border-color: #c3e6cb; color: #155724; }
+        
+        .btn-del-slot {
+            position: absolute; top: -8px; right: -8px; 
+            background: #dc3545; color: white; 
+            width: 22px; height: 22px; border-radius: 50%; 
+            border: 2px solid white; cursor: pointer; 
+            font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.2s;
+        }
+        .btn-del-slot:hover { background-color: #bd2130; transform: scale(1.1); }
+
+        .icon-lock svg { width: 14px; height: 14px; stroke: #856404; stroke-width: 2.5; fill: none; }
+
+        /* MODAL */
+        .modal-overlay-custom {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); display: none;
-            justify-content: center; align-items: center; z-index: 1000;
+            justify-content: center; align-items: center; z-index: 2000;
+            backdrop-filter: blur(2px);
         }
-
-        .modal-content {
-            background: white; width: 90%; max-width: 500px;
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            padding: 25px; position: relative; animation: fadeIn 0.2s ease;
+        .modal-content-custom {
+            background: white; padding: 30px; border-radius: 12px;
+            width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.2s ease-out;
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .modal-body { font-size: 0.95rem; color: #555; line-height: 1.5; white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eef0f5; }
-        .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; }
-        .modal-close:hover { color: #333; }
-        .modal-confirm-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .modal-btn { padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; transition: background-color 0.2s; }
-        .modal-btn-confirm { background-color: #0066cc; color: white; }
-        .modal-btn-confirm:hover { background-color: #0056b3; }
-        .modal-btn-cancel { background-color: #e0e0e0; color: #333; }
-        .modal-btn-cancel:hover { background-color: #d0d0d0; }
-        .modal-alert-content { text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal-title-custom { font-size: 1.3rem; font-weight: bold; margin-bottom: 15px; color: #333; }
+        .modal-body-custom { font-size: 1rem; color: #555; margin-bottom: 25px; line-height: 1.5; }
+        .modal-actions-custom { display: flex; justify-content: center; gap: 15px; }
+        .btn-modal { padding: 10px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem; }
+        .btn-confirm { background-color: #0066cc; color: white; }
+        .btn-cancel { background-color: #e9ecef; color: #333; }
     </style>
 </head>
 <body>
     <nav>
         <div class="logo">
-            <img src="./img/logo_maida_branca.png" alt="Maida Atendimento">
+            <img src="./img/logo_maida_branca.png" alt="Maida Health" onerror="this.style.display='none'; this.parentNode.innerText='Maida Health';">
         </div>
-        <div class="user-info">
-            Gerenciamento
-            <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-            </button>
+        <div>
+            <a href="index.html" class="btn-voltar">← Voltar ao Painel</a>
         </div>
     </nav>
 
-    <div class="header-actions">
-        <a href="index.html" class="btn-voltar">← Voltar</a>
-        
-        <div class="painel-data-inline">
-            <label style="font-weight: 600; color:#333; margin: 0; font-size: 0.9rem;">Selecione a Data:</label>
-            <input type="date" id="dataSelecionada" class="input-moderno">
-        </div>
-    </div>
-
-    <main class="container-admin">
-        <div class="painel-admin">
-            <h3>1. Adicionar Novos Horários</h3>
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <label>Novo Horário</label>
-                    <input type="time" id="inputHorario" class="input-moderno" style="width: 100%;">
+    <main>
+        <div class="panel">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><line x1="12" y1="14" x2="12" y2="20"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                Adicionar Horários (Lote)
+            </h2>
+            <p style="color:#666; margin-bottom: 20px; font-size: 0.9rem;">Selecione o período e os dias da semana.</p>
+            
+            <div class="form-row">
+                <div class="input-group">
+                    <label>Data Início:</label>
+                    <input type="date" id="dataInicio">
                 </div>
-                <button class="btn-add" onclick="adicionarNaLista()">+ Adicionar</button>
-                <button class="btn-auto" onclick="gerarHorariosAutomaticos()">Automático</button>
+                <div class="input-group">
+                    <label>Data Fim:</label>
+                    <input type="date" id="dataFim">
+                </div>
             </div>
-            <p style="font-size: 0.85em; color: #666; margin-bottom: 10px; font-weight: 500;">Lista de horários para salvar:</p>
-            <ul id="listaNovos" class="lista-horarios"></ul>
-            <button class="btn-salvar" id="btnSalvar" onclick="salvarNoBanco()" disabled>Salvar Novos Horários</button>
+
+            <div class="input-group" style="margin-bottom: 10px;">
+                <label>Repetir nos dias:</label>
+            </div>
+            <div class="weekdays-selector">
+                <label class="weekday-item"><input type="checkbox" value="1" checked> Seg</label>
+                <label class="weekday-item"><input type="checkbox" value="2" checked> Ter</label>
+                <label class="weekday-item"><input type="checkbox" value="3" checked> Qua</label>
+                <label class="weekday-item"><input type="checkbox" value="4" checked> Qui</label>
+                <label class="weekday-item"><input type="checkbox" value="5" checked> Sex</label>
+                <label class="weekday-item"><input type="checkbox" value="6"> Sáb</label>
+                <label class="weekday-item"><input type="checkbox" value="0" style="accent-color: #dc3545;"> Dom</label>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <label>Grade de Horários:</label>
+                <small id="texto-marcar" style="color: #0066cc; cursor: pointer; font-weight:bold;" onclick="alternarSelecao()">Marcar Todos</small>
+            </div>
+            <div class="grid-horarios" id="gridNovos">
+                </div>
+
+            <div class="manual-add-container">
+                <div class="input-group">
+                    <label style="margin-bottom:5px;">Adicionar outro horário:</label>
+                    <div class="manual-row">
+                        <input type="time" id="horaManual">
+                        <button class="btn-add-manual" onclick="adicionarHoraManual()" title="Adicionar este horário na grade">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-action btn-save" onclick="salvarLote()">
+                <span>Salvar e Gerar Agenda</span>
+            </button>
         </div>
 
-        <div class="painel-admin">
-            <h3>2. Horários Já Cadastrados</h3>
-            <div id="loadingExistentes" style="display: none; text-align: center; color: #0066cc; font-weight: bold; margin-top: 20px;">Carregando...</div>
-            <ul id="listaExistentes" class="lista-horarios">
-                <p class="aviso-selecao">Selecione uma data acima para ver os horários.</p>
-            </ul>
+        <div class="panel">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Visualizar / Excluir
+            </h2>
+            <div class="input-group" style="margin-bottom: 20px; max-width: 100%;">
+                <label>Selecione uma data para conferir:</label>
+                <input type="date" id="dataVisualizar" onchange="carregarHorariosDoBanco(this.value)">
+            </div>
+            
+            <div id="loadingExistentes" style="display:none; color:#666; margin-bottom:15px; font-style:italic;">Carregando horários...</div>
+            <ul class="lista-existentes" id="listaSlotsBanco"></ul>
         </div>
     </main>
 
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="fecharModal('modal-confirm')">×</button>
-            <div class="modal-header">Confirmar Ação</div>
-            <div class="modal-body" id="modal-confirm-texto"></div>
-            <div class="modal-confirm-buttons">
-                <button class="modal-btn modal-btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
-                <button class="modal-btn modal-btn-confirm" onclick="executarAcaoConfirmada()">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-alert" class="modal-overlay">
-        <div class="modal-content modal-alert-content">
-            <button class="modal-close" onclick="fecharModal('modal-alert')">×</button>
-            <div class="modal-header" id="modal-alert-titulo">Alerta</div>
-            <div class="modal-body" id="modal-alert-texto"></div>
-            <div class="modal-confirm-buttons">
-                <button class="modal-btn modal-btn-confirm" onclick="fecharModal('modal-alert')">OK</button>
-            </div>
+    <div id="modalSistema" class="modal-overlay-custom">
+        <div class="modal-content-custom">
+            <div id="modalTitulo" class="modal-title-custom">Aviso</div>
+            <div id="modalMensagem" class="modal-body-custom">Mensagem aqui</div>
+            <div id="modalBotoes" class="modal-actions-custom"></div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-
     <script>
-        let listaNovosHorarios = [];
-        let userRole = 'geral';
-
-        async function verificarPermissaoAdmin() {
-            try {
-                const user = firebase.auth().currentUser;
-                if (!user) {
-                    window.location.href = 'login.html';
-                    return false;
-                }
-                
-                const token = await user.getIdToken();
-                const response = await fetch('/api/user-role', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    userRole = data.role;
-                    
-                    if (userRole !== 'admin') {
-                        mostrarAlerta("Acesso Negado", "Somente administradores podem acessar esta página.");
-                        setTimeout(() => window.location.href = 'index.html', 2000);
-                        return false;
-                    }
-                    return true;
-                } else {
-                    window.location.href = 'login.html';
-                    return false;
-                }
-            } catch (error) {
-                console.error("Erro ao verificar permissão:", error);
-                window.location.href = 'login.html';
-                return false;
-            }
-        }
-
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-
-        async function iniciarSistema() {
+        async function iniciar() {
             try {
                 const res = await fetch('/api/firebase-config');
                 const config = await res.json();
                 if (!firebase.apps.length) firebase.initializeApp(config);
-                
-                firebase.auth().onAuthStateChanged(async (user) => { 
-                    if (!user) {
-                        window.location.href = "login.html";
-                    } else {
-                        const temPermissao = await verificarPermissaoAdmin();
-                        if (!temPermissao) return;
-                    }
+                firebase.auth().onAuthStateChanged(user => {
+                    if (user) verificarAcesso();
+                    else window.location.href = 'login.html';
                 });
+            } catch (e) { console.error("Erro config:", e); }
+        }
+        iniciar();
+
+        async function verificarAcesso() {
+            const token = localStorage.getItem('maida_token');
+            if (!token) return window.location.href = 'login.html';
+
+            try {
+                const response = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await response.json();
+                
+                if (data.role !== 'admin' && data.role !== 'recepcao') {
+                    alert("Acesso restrito a gestores.");
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                const hoje = new Date().toISOString().split('T')[0];
+                document.getElementById('dataInicio').value = hoje;
+                document.getElementById('dataFim').value = hoje;
+                document.getElementById('dataVisualizar').value = hoje;
+                
+                gerarGridHorarios();
+                carregarHorariosDoBanco(hoje);
+            } catch (e) {
+                console.error("Erro auth:", e);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // --- NOVA LISTA DE HORÁRIOS SOLICITADA ---
+        const horariosPadrao = [
+            "14:30", "14:37", "14:44", "14:51", "14:58", 
+            "15:05", "15:12", "15:19", "15:26", "15:33", "15:40", "15:47", "15:54", 
+            "16:01", "16:08", "16:15", "16:22", "16:29", "16:36", "16:43", "16:50", "16:57", 
+            "17:04", "17:11", "17:18", "17:25", "17:32", "17:39", "17:46"
+        ];
+
+        function gerarGridHorarios() {
+            const container = document.getElementById('gridNovos');
+            container.innerHTML = '';
+            horariosPadrao.forEach(hora => {
+                criarCheckHorario(hora, container);
+            });
+        }
+
+        function criarCheckHorario(hora, container, checked = false) {
+            const id = `check-${hora.replace(':', '')}`;
+            // Evita duplicatas se adicionar manual
+            if (document.getElementById(id)) return;
+
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <input type="checkbox" id="${id}" value="${hora}" class="hora-check" ${checked ? 'checked' : ''}>
+                <label for="${id}" class="hora-label">${hora}</label>
+            `;
+            container.appendChild(div);
+        }
+
+        // --- FUNÇÃO PARA ADICIONAR HORÁRIO MANUALMENTE ---
+        function adicionarHoraManual() {
+            const input = document.getElementById('horaManual');
+            const hora = input.value;
+            if(!hora) return;
+
+            const container = document.getElementById('gridNovos');
+            
+            // Verifica se já existe, se sim, só marca
+            const existente = document.querySelector(`input[value="${hora}"]`);
+            if (existente) {
+                existente.checked = true;
+                // Scroll para o elemento para dar feedback visual
+                existente.parentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                criarCheckHorario(hora, container, true);
+                // Scroll para o fim da lista
+                container.scrollTop = container.scrollHeight;
+            }
+            input.value = ''; // Limpa input
+        }
+
+        function alternarSelecao() {
+            const checks = document.querySelectorAll('.hora-check');
+            const texto = document.getElementById('texto-marcar');
+            const todosMarcados = Array.from(checks).every(c => c.checked);
+            const novoEstado = !todosMarcados;
+            checks.forEach(c => c.checked = novoEstado);
+            texto.innerText = novoEstado ? "Desmarcar Todos" : "Marcar Todos";
+        }
+
+        async function salvarLote() {
+            const inicio = document.getElementById('dataInicio').value;
+            const fim = document.getElementById('dataFim').value;
+            const diasSemana = Array.from(document.querySelectorAll('.weekdays-selector input:checked')).map(cb => parseInt(cb.value));
+            const slotsSelecionados = Array.from(document.querySelectorAll('.hora-check:checked')).map(cb => cb.value);
+
+            if (!inicio || !fim) return exibirModal("Atenção", "Selecione a data de início e fim.");
+            if (slotsSelecionados.length === 0) return exibirModal("Atenção", "Selecione pelo menos um horário.");
+            if (diasSemana.length === 0) return exibirModal("Atenção", "Selecione pelo menos um dia da semana.");
+
+            const listaDatas = [];
+            let dataAtual = new Date(inicio + 'T00:00:00');
+            const dataFinal = new Date(fim + 'T00:00:00');
+
+            if (dataFinal < dataAtual) return exibirModal("Erro", "Data final deve ser maior ou igual à inicial.");
+
+            while (dataAtual <= dataFinal) {
+                if (diasSemana.includes(dataAtual.getDay())) {
+                    listaDatas.push(dataAtual.toISOString().split('T')[0]);
+                }
+                dataAtual.setDate(dataAtual.getDate() + 1);
+            }
+
+            if (listaDatas.length === 0) return exibirModal("Aviso", "Nenhuma data válida no intervalo.");
+
+            exibirModal("Confirmar Criação", 
+                `Criar ${slotsSelecionados.length} horários para ${listaDatas.length} dias?\n(Total: ${slotsSelecionados.length * listaDatas.length} slots)`, 
+                async () => {
+                    const token = localStorage.getItem('maida_token');
+                    try {
+                        const response = await fetch('/api/admin/slots', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ datas: listaDatas, slots: slotsSelecionados })
+                        });
+
+                        if (response.ok) {
+                            const res = await response.json();
+                            exibirModal("Sucesso", res.message || "Horários criados!");
+                            document.querySelectorAll('.hora-check').forEach(cb => cb.checked = false);
+                            document.getElementById('texto-marcar').innerText = "Marcar Todos";
+                            document.getElementById('dataVisualizar').value = inicio;
+                            carregarHorariosDoBanco(inicio);
+                        } else {
+                            const err = await response.json();
+                            exibirModal("Erro", err.error);
+                        }
+                    } catch (e) {
+                        exibirModal("Erro", "Erro de conexão.");
+                    }
+                }
+            );
+        }
+
+        async function carregarHorariosDoBanco(dataIso) {
+            if (!dataIso) return;
+            const ul = document.getElementById('listaSlotsBanco');
+            const loader = document.getElementById('loadingExistentes');
+            ul.innerHTML = '';
+            loader.style.display = 'block';
+
+            const token = localStorage.getItem('maida_token');
+
+            try {
+                const response = await fetch(`/api/admin/slots?data=${dataIso}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const slots = await response.json();
+                loader.style.display = 'none';
+
+                if (!response.ok || slots.length === 0) {
+                    ul.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999; margin-top:10px;">Nenhum horário cadastrado nesta data.</p>';
+                    return;
+                }
+
+                slots.sort((a, b) => a.hora.localeCompare(b.hora));
+
+                slots.forEach(slot => {
+                    const li = document.createElement('li');
+                    li.className = `slot-item ${slot.disponivel ? 'livre' : 'ocupado'}`;
+                    
+                    let html = `${slot.hora}`;
+                    
+                    if (slot.disponivel) {
+                        html += `<button class="btn-del-slot" onclick="excluirSlot(${slot.id})" title="Excluir">×</button>`;
+                    } else {
+                        li.title = "Ocupado (Possui agendamento)";
+                        html += ` 
+                        <span class="icon-lock" title="Ocupado">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>`;
+                    }
+                    
+                    li.innerHTML = html;
+                    ul.appendChild(li);
+                });
+
             } catch (error) {
-                console.error("Erro ao iniciar", error);
+                loader.style.display = 'none';
+                ul.innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar lista.</p>';
             }
         }
-        iniciarSistema();
 
-        async function getAuthHeaders() {
-            const user = firebase.auth().currentUser;
-            const token = await user.getIdToken();
-            return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+        async function excluirSlot(id) {
+            exibirModal("Confirmar Exclusão", "Deseja excluir este horário permanentemente?", async () => {
+                const token = localStorage.getItem('maida_token');
+                try {
+                    const response = await fetch(`/api/admin/slots/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        carregarHorariosDoBanco(document.getElementById('dataVisualizar').value);
+                    } else {
+                        const res = await response.json();
+                        exibirModal("Erro", res.error);
+                    }
+                } catch (e) {
+                    exibirModal("Erro", "Erro de conexão.");
+                }
+            });
         }
 
-        function abrirModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
+        function exibirModal(titulo, mensagem, callbackConfirmacao = null) {
+            const modal = document.getElementById('modalSistema');
+            document.getElementById('modalTitulo').innerText = titulo;
+            document.getElementById('modalMensagem').innerText = mensagem;
+            const btnContainer = document.getElementById('modalBotoes');
+            btnContainer.innerHTML = '';
 
-        function fecharModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+            if (callbackConfirmacao) {
+                const btnSim = document.createElement('button');
+                btnSim.className = 'btn-modal btn-confirm';
+                btnSim.innerText = 'Confirmar';
+                btnSim.onclick = () => { fecharModal(); callbackConfirmacao(); };
+                
+                const btnNao = document.createElement('button');
+                btnNao.className = 'btn-modal btn-cancel';
+                btnNao.innerText = 'Cancelar';
+                btnNao.onclick = fecharModal;
 
-        function mostrarAlerta(titulo, mensagem) {
-            document.getElementById('modal-alert-titulo').innerText = titulo;
-            document.getElementById('modal-alert-texto').innerText = mensagem;
-            abrirModal('modal-alert');
-        }
-
-        function mostrarConfirmacao(mensagem, callback) {
-            document.getElementById('modal-confirm-texto').innerText = mensagem;
-            window.confirmacaoCallback = callback;
-            abrirModal('modal-confirm');
-        }
-
-        function executarAcaoConfirmada() {
-            fecharModal('modal-confirm');
-            if (window.confirmacaoCallback) {
-                window.confirmacaoCallback();
-                window.confirmacaoCallback = null;
+                btnContainer.appendChild(btnNao);
+                btnContainer.appendChild(btnSim);
+            } else {
+                const btnOk = document.createElement('button');
+                btnOk.className = 'btn-modal btn-confirm';
+                btnOk.innerText = 'OK';
+                btnOk.onclick = fecharModal;
+                btnContainer.appendChild(btnOk);
             }
+            modal.style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalSistema').style.display = 'none';
         }
 
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.style.display = 'none';
-            }
-        }
-
-        function gerarHorariosAutomaticos() {
-            if(!inputData.value) {
-                mostrarAlerta("Data Não Selecionada", "Selecione uma data primeiro!");
-                return;
-            }
-
-            const horariosAuto = [
-                '14:30', '14:37', '14:44', '14:51', '14:58',
-                '15:05', '15:12', '15:19', '15:26', '15:33',
-                '15:40', '15:47', '15:54', '16:01', '16:08',
-                '16:15', '16:22', '16:29', '16:36', '16:43',
-                '16:50', '16:57', '17:04', '17:11', '17:18',
-                '17:25', '17:32', '17:39', '17:46'
-            ];
-
-            horariosAuto.forEach(horario => {
-                if (!listaNovosHorarios.includes(horario)) {
-                    listaNovosHorarios.push(horario);
-                }
-            });
-            
-            listaNovosHorarios.sort();
-            renderizarNovos();
-            mostrarAlerta("Horários Gerados", "Foram adicionados 29 horários automáticos (14:30 às 17:46, a cada 7 minutos).");
-        }
-
-        const inputData = document.getElementById('dataSelecionada');
-        inputData.addEventListener('change', function() {
-            listaNovosHorarios = [];
-            renderizarNovos(); 
-            carregarHorariosDoBanco(this.value); 
-        });
-
-        function adicionarNaLista() {
-            if(!inputData.value) {
-                mostrarAlerta("Data Não Selecionada", "Selecione uma data primeiro!");
-                return;
-            }
-            const inputTime = document.getElementById('inputHorario');
-            const horario = inputTime.value;
-            if (!horario) {
-                mostrarAlerta("Horário Vazio", "Selecione um horário!");
-                return;
-            }
-            if (listaNovosHorarios.includes(horario)) {
-                mostrarAlerta("Horário Duplicado", "Este horário já está na lista de novos!");
-                return;
-            }
-            listaNovosHorarios.push(horario);
-            listaNovosHorarios.sort();
-            renderizarNovos();
-            inputTime.value = '';
-            inputTime.focus();
-        }
-
-        function removerDaListaNovos(horario) {
-            listaNovosHorarios = listaNovosHorarios.filter(h => h !== horario);
-            renderizarNovos();
-        }
-
-        function renderizarNovos() {
-            const ul = document.getElementById('listaNovos');
-            const btn = document.getElementById('btnSalvar');
-            ul.innerHTML = '';
-            listaNovosHorarios.forEach(horario => {
-                const li = document.createElement('li');
-                li.className = 'tag-horario novo';
-                li.innerHTML = `${horario} <button class="btn-remove" style="color: #155724;" onclick="removerDaListaNovos('${horario}')" title="Remover">✕</button>`;
-                ul.appendChild(li);
-            });
-            btn.disabled = (listaNovosHorarios.length === 0 || !inputData.value);
-        }
-
-        async function salvarNoBanco() {
-            const data = inputData.value;
-            if (!data) return;
-            
-            mostrarConfirmacao(`Deseja salvar ${listaNovosHorarios.length} horários para a data ${data}?`, async function() {
-                try {
-                    const headers = await getAuthHeaders();
-                    const response = await fetch('/api/admin/criar-horarios', {
-                        method: 'POST', headers: headers,
-                        body: JSON.stringify({ data: data, horarios: listaNovosHorarios })
-                    });
-                    if (response.ok) {
-                        mostrarAlerta("Sucesso", "Horários salvos com sucesso!");
-                        listaNovosHorarios = [];
-                        renderizarNovos();
-                        carregarHorariosDoBanco(data);
-                    } else { 
-                        const erro = await response.json();
-                        mostrarAlerta("Erro ao Salvar", 'Erro: ' + (erro.error || 'Falha ao salvar horários.')); 
-                    }
-                } catch (error) { 
-                    console.error(error); 
-                    mostrarAlerta("Erro de Conexão", 'Erro ao conectar com o servidor.'); 
-                }
-            });
-        }
-
-        async function carregarHorariosDoBanco(data) {
-            const ul = document.getElementById('listaExistentes');
-            ul.innerHTML = '';
-            document.getElementById('loadingExistentes').style.display = 'block';
-            try {
-                const headers = await getAuthHeaders();
-                const response = await fetch(`/api/admin/slots?data=${data}`, { headers });
-                const slots = await response.json();
-                document.getElementById('loadingExistentes').style.display = 'none';
-                if (slots.length === 0) { ul.innerHTML = '<p class="aviso-selecao">Nenhum horário cadastrado nesta data.</p>'; return; }
-                
-                slots.forEach(slot => {
-                    const li = document.createElement('li');
-                    
-                    if (slot.disponivel) {
-                        li.className = `tag-horario existente`;
-                        li.title = "Disponível";
-                        const btnExcluir = `<button class="btn-remove" title="Excluir" style="color:#dc3545;" onclick="excluirSlotBanco(${slot.id})">🗑️</button>`;
-                        li.innerHTML = `${slot.hora} ${btnExcluir}`;
-                    } else {
-                        li.className = `tag-horario ocupado`;
-                        li.title = "Ocupado (Possui agendamento)";
-                        li.innerHTML = `${slot.hora} <span class="icon-lock">🔒</span>`;
-                    }
-                    ul.appendChild(li);
-                });
-            } catch (error) { 
-                console.error(error); 
-                document.getElementById('loadingExistentes').style.display = 'none';
-                ul.innerHTML = '<p>Erro ao carregar lista.</p>'; 
-            }
-        }
-
-        function excluirSlotBanco(id) {
-            mostrarConfirmacao("Tem certeza que deseja excluir este horário permanentemente?", async function() {
-                try {
-                    const headers = await getAuthHeaders();
-                    const response = await fetch(`/api/admin/slots/${id}`, {
-                        method: 'DELETE', headers: headers
-                    });
-                    const res = await response.json();
-                    if (response.ok) { 
-                        carregarHorariosDoBanco(inputData.value); 
-                        mostrarAlerta("Sucesso", "Horário excluído com sucesso!");
-                    } else { 
-                        mostrarAlerta("Erro ao Excluir", 'Erro: ' + res.error); 
-                    }
-                } catch (error) { 
-                    mostrarAlerta("Erro de Conexão", 'Erro ao conectar com o servidor.'); 
-                }
-            });
+            if (event.target.classList.contains('modal-overlay-custom')) fecharModal();
         }
     </script>
 </body>

@@ -285,6 +285,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
     <script>
+        async function verificarAcessoRestrito() {
+            const token = localStorage.getItem('maida_token');
+            if (!token) window.location.href = 'login.html';
+
+            try {
+                const response = await fetch('/api/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.role === 'cliente') {
+                    alert("Acesso não autorizado para este perfil.");
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        verificarAcessoRestrito();
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         async function iniciarSistema() {

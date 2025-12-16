@@ -164,7 +164,7 @@
             const pMetropolitana = totalGeral > 0 ? ((dados.regiao.metropolitana / totalGeral) * 100).toFixed(1) : 0;
 
             let html = `
-                <div class="report-title">Relatório de Agendamento</div>
+                <div class="report-title">Relatório de Perícia Médica Dermatológica - ISSEC</div>
                 <div class="report-period">Período: ${formatarDataPT(inicio)} até ${formatarDataPT(fim)}</div>
                 
                 <div class="charts-section">
@@ -307,7 +307,7 @@
                 } catch (e) {}
 
                 doc.setFontSize(16); doc.setTextColor(0, 0, 0); doc.setFont(undefined, 'bold');
-                doc.text("Relatório de Agendamento", 105, 40, { align: 'center' });
+                doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 40, { align: 'center' });
                 doc.setFont(undefined, 'normal');
                 
                 doc.setFontSize(10); doc.setTextColor(100);

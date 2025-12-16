@@ -436,6 +436,9 @@
         }
 
         .dropdown:hover .dropdown-content { display: block; }
+        .hide-for-client {
+            display: none !important;
+        }
 
     </style>
 </head>
@@ -636,8 +639,8 @@
         const token = localStorage.getItem('maida_token');
         const userName = localStorage.getItem('maida_user_name');
         let filtroStatusAtual = null;
-        let userRole = 'geral';
-
+        let userRole = 'guest'; 
+        
         async function iniciarFirebase() {
             try {
                 const res = await fetch('/api/firebase-config');
@@ -654,33 +657,65 @@
         if (!token) {
             window.location.href = 'login.html';
         } else {
-            obterDadosUsuario();
             const hoje = new Date().toISOString().split('T')[0];
             document.getElementById('filtroData').value = hoje;
+            checarPermissoes(); 
         }
 
-        async function obterDadosUsuario() {
+        async function checarPermissoes() {
+            if (!token) return;
+
             try {
-                const response = await fetch('/api/user-role', {
+                const response = await fetch('/api/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    userRole = data.role;
-                    document.getElementById('user-display').textContent = data.email;
-                    
-                    if (userRole === 'admin') {
-                        document.getElementById('link-gerenciar').style.display = 'inline';
-                    }
-                    
-                    if (userRole === 'admin' || userRole === 'recepcao') {
-                        document.getElementById('btnEncaixe').style.display = 'flex';
-                        document.getElementById('menu-funcoes').style.display = 'inline-block';
-                    }
+                
+                if (!response.ok) throw new Error('Falha ao obter perfil');
+                
+                const data = await response.json();
+                userRole = data.role; 
+                
+                document.getElementById('user-display').textContent = data.email;
 
-                    verificarPendencias(); 
+                aplicarRestricoesVisuais();
+                carregarAgendamentos(); 
+                
+                if (userRole === 'admin' || userRole === 'recepcao') {
+                    verificarPendencias();
                 }
-            } catch (error) { console.error("Erro user role", error); }
+
+            } catch (error) {
+                console.error("Erro ao verificar permissões", error);
+            }
+        }
+
+        function aplicarRestricoesVisuais() {
+            const linkAgendar = document.querySelector('nav a[href="agendar.html"]');
+            const linkGerenciar = document.getElementById('link-gerenciar');
+            const menuFuncoes = document.getElementById('menu-funcoes');
+            const btnEncaixe = document.getElementById('btnEncaixe');
+
+            if(linkAgendar) linkAgendar.style.display = 'none';
+            if(linkGerenciar) linkGerenciar.style.display = 'none';
+            if(menuFuncoes) menuFuncoes.style.display = 'none';
+            if(btnEncaixe) btnEncaixe.style.display = 'none';
+
+
+            if (userRole === 'cliente') {
+                if(menuFuncoes) menuFuncoes.style.display = 'inline-block'; // Pode ver relatórios
+            }
+            
+            else if (userRole === 'call_center') {
+                if(linkAgendar) linkAgendar.style.display = 'inline-block';
+                if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
+            }
+
+            else if (userRole === 'admin' || userRole === 'recepcao') {
+                if(linkAgendar) linkAgendar.style.display = 'inline-block';
+                if(linkGerenciar) linkGerenciar.style.display = 'inline-block'; 
+                if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
+                if(btnEncaixe) btnEncaixe.style.display = 'flex';
+            }
         }
 
         function logout() {
@@ -689,7 +724,6 @@
                     localStorage.clear();
                     window.location.href = 'login.html';
                 }).catch((error) => {
-                    console.error("Erro ao deslogar do Firebase:", error);
                     localStorage.clear();
                     window.location.href = 'login.html';
                 });
@@ -699,10 +733,7 @@
             }
         }
 
-
-        // --- SISTEMA DE MODAIS ---
         function abrirModalEncaixe() {
-            // Define a hora atual como padrão
             const agora = new Date();
             const horaFormatada = agora.toTimeString().substring(0,5);
             document.getElementById('encaixeHora').value = horaFormatada;
@@ -772,7 +803,6 @@
                 if(response.ok) {
                     alert("Encaixe realizado com sucesso!");
                     fecharModal('modalEncaixe');
-                    // Força recarregar para hoje
                     document.getElementById('filtroData').value = new Date().toISOString().split('T')[0];
                     carregarAgendamentos();
                 } else {
@@ -828,7 +858,6 @@
             }
         }
 
-        // --- LÓGICA DE DADOS ---
         function filtrarPorStatus(status) {
             filtroStatusAtual = status;
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -852,7 +881,6 @@
 
                 if (data.pendencias > 0) {
                     alerta.style.display = 'flex';
-                    // Mostra as datas específicas
                     const datasFormatadas = data.datas.join(', ');
                     texto.innerHTML = `<strong>Atenção!</strong> Existem agendamentos pendentes (não finalizados) nos dias: <strong>${datasFormatadas}</strong>. Favor regularizar.`;
                 } else {
@@ -868,6 +896,7 @@
                 const response = await fetch(`/api/agendamentos?data=${dataSelecionada}`, {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
                 });
+                
                 if (response.status === 401 || response.status === 403) { logout(); return; }
                 const dados = await response.json();
                 const tbody = document.getElementById('tabela-corpo');
@@ -901,13 +930,13 @@
                     }
 
                     let btnCancelar = '';
-                    if (userRole === 'admin' || userRole === 'recepcao') {
+                    if (['admin', 'recepcao', 'call_center'].includes(userRole)) {
                         btnCancelar = `<button class="btn-icon btn-cancelar" onclick="cancelarAgendamento(${item.id})" title="Cancelar Agendamento">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                          </button>`;
                     }
 
-                    const disabled = (userRole !== 'admin' && userRole !== 'recepcao') ? 'disabled' : '';
+                    const disabled = (userRole === 'cliente' || userRole === 'guest') ? 'disabled' : '';
 
                     tr.innerHTML = `
                         <td style="font-weight:bold; white-space: nowrap;">${item.horario}</td>
@@ -938,7 +967,8 @@
         }
 
         async function alterarStatus(id, selectElement) {
-            if (userRole !== 'admin' && userRole !== 'recepcao') return;
+            if (userRole === 'cliente') return;
+            
             const novoStatus = selectElement.value;
             const classe = novoStatus.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
             selectElement.className = `status-select ${classe}`;
@@ -948,7 +978,8 @@
                     body: JSON.stringify({ status: novoStatus })
                 });
                 if (!response.ok) throw new Error('Falha');
-                carregarAgendamentos(); verificarPendencias();
+                carregarAgendamentos(); 
+                if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
             } catch (error) { exibirModal('Erro', 'Erro ao atualizar status.'); }
         }
 
@@ -960,7 +991,8 @@
                     });
                     if (response.ok) {
                         exibirModal('Sucesso', 'Agendamento cancelado!');
-                        carregarAgendamentos(); verificarPendencias();
+                        carregarAgendamentos(); 
+                        if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
                     } else {
                         const erro = await response.json();
                         exibirModal('Erro', 'Erro: ' + (erro.error || 'Falha ao cancelar'));
@@ -969,7 +1001,6 @@
             });
         }
 
-        window.onload = function() { carregarAgendamentos(); };
         document.getElementById('filtroData').addEventListener('change', carregarAgendamentos);
         document.getElementById('buscaGeral').addEventListener('keyup', carregarAgendamentos);
     </script>
