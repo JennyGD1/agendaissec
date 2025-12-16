@@ -289,7 +289,7 @@
 
         async function iniciarSistema() {
             try {
-                const res = await fetch('http://localhost:3000/api/firebase-config');
+                const res = await fetch('/api/firebase-config');
                 const config = await res.json();
                 if (!firebase.apps.length) firebase.initializeApp(config);
 
