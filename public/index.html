@@ -699,7 +699,7 @@
             const classe = novoStatus.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
             selectElement.className = `status-select ${classe}`;
             try {
-                const response = await fetch(`/api/agendamentos${id}/status`, {
+                const response = await fetch(`/api/agendamentos/${id}/status`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ status: novoStatus })
                 });
