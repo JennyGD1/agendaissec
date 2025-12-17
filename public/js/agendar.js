@@ -232,13 +232,17 @@ async function salvarAgendamento() {
     const nome = document.getElementById('buscaNome').value;
     const cartao = document.getElementById('numCartao').value;
     const emailInput = document.getElementById('email').value;
+    const contatoInput = document.getElementById('contato').value;
     const user = firebase.auth().currentUser;
 
     if (!user) return mostrarAlerta("Sessão Perdida", "Sua sessão expirou. Faça login novamente.");
     if (!slotId) return mostrarAlerta("Horário Não Selecionado", "Selecione um horário disponível.");
     if (!nome || !cartao) return mostrarAlerta("Beneficiário Inválido", "Preencha os dados do beneficiário corretamente.");
-    if (!emailInput) return mostrarAlerta("Email Obrigatório", "Preencha o email do beneficiário.");
-
+    const regexTelefone = /^\(\d{2}\) \d \d{4}-\d{4}$/;
+    if (!contatoInput) return mostrarAlerta("Telefone Obrigatório", "Preencha o telefone do beneficiário.");
+    if (!regexTelefone.test(contatoInput)) {
+        return mostrarAlerta("Formato Inválido", "Digite o telefone no formato: (99) 9 9999-9999");
+    }
     try {
         const headers = await getAuthHeaders();
         
@@ -264,7 +268,7 @@ async function salvarAgendamento() {
                 slot_id: slotId,
                 nome: nome,
                 cartao: cartao,
-                contato: document.getElementById('contato').value,
+                contato: contatoInput,
                 email: emailInput,
                 regiao: document.getElementById('regiao').value,
                 obs: document.getElementById('obs').value,
@@ -301,4 +305,12 @@ async function salvarAgendamento() {
         console.error(error);
         mostrarAlerta("Erro", "Falha ao verificar histórico de agendamentos.");
     }
+}
+const inputTelefone = document.getElementById('contato');
+
+if (inputTelefone) {
+    inputTelefone.addEventListener('input', function (e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,1})(\d{0,4})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? ' ' + x[3] : '') + (x[4] ? '-' + x[4] : '');
+    });
 }

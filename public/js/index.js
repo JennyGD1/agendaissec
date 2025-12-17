@@ -198,8 +198,19 @@ async function salvarEncaixe(force = false) {
     const nome = document.getElementById('encaixeNome').value;
     const cartao = document.getElementById('encaixeCartao').value;
     
+    const contatoEl = document.getElementById('encaixeContato');
+    const contato = contatoEl ? contatoEl.value.trim() : '';
+    
     if(!hora || !nome) {
         return alert("Preencha Hora e Nome do Beneficiário.");
+    }
+    const regexTelefone = /^\(\d{2}\) \d \d{4}-\d{4}$/;
+    if (!contato) {
+        return alert("O telefone é obrigatório para realizar o encaixe.");
+    }
+
+    if (!regexTelefone.test(contato)) {
+        return alert("Telefone inválido! Use o formato: (85) 9 9999-9999");
     }
 
     const btn = document.querySelector('#modalEncaixe button[onclick="salvarEncaixe()"]');
@@ -212,7 +223,7 @@ async function salvarEncaixe(force = false) {
 
     const payload = {
         hora, nome, cartao,
-        contato: document.getElementById('encaixeContato').value,
+        contato: contato,
         regiao: document.getElementById('encaixeRegiao').value,
         obs: document.getElementById('encaixeObs').value,
         force: force
@@ -520,6 +531,14 @@ if (inputEncaixe) {
         timeoutEncaixe = setTimeout(() => {
             buscarEncaixeApi(false);
         }, 600);
+    });
+}
+const inputEncaixeContato = document.getElementById('encaixeContato');
+
+if (inputEncaixeContato) {
+    inputEncaixeContato.addEventListener('input', function (e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,1})(\d{0,4})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? ' ' + x[3] : '') + (x[4] ? '-' + x[4] : '');
     });
 }
 
