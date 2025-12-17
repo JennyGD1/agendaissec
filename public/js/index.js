@@ -67,7 +67,6 @@ function aplicarRestricoesVisuais() {
     }
     else if (userRole === 'call_center') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
-        if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
     }
     else if (userRole === 'admin' || userRole === 'recepcao') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
