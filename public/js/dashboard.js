@@ -142,11 +142,12 @@ function renderizarGraficos(data) {
             },
             y: {
                 grid: { display: false, drawBorder: false },
+                ticks: { display: false }
             }
         },
         layout: {
              padding: {
-                 right: 40,
+                 right: 50, // Espaço lateral para números em barras horizontais
                  top: 20 
              }
         }
@@ -201,12 +202,16 @@ function renderizarGraficos(data) {
         }
     });
 
+    // --- CORREÇÃO AQUI ---
     const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const semanaOptions = JSON.parse(JSON.stringify(commonBarOptions));
     semanaOptions.scales.y.ticks = { display: false };
     semanaOptions.scales.x.ticks = { display: true, color: '#666' };
     semanaOptions.plugins.datalabels.align = 'top';
     semanaOptions.plugins.datalabels.anchor = 'end';
+    
+    // Aumentamos o padding superior para 50px para caber o número sem cortar
+    semanaOptions.layout.padding.top = 50; 
 
     const ctxSemana = document.getElementById('chartSemana').getContext('2d');
     chartSemana = new Chart(ctxSemana, {
