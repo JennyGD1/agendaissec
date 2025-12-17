@@ -202,15 +202,17 @@ async function salvarEncaixe(force = false) {
     const contato = contatoEl ? contatoEl.value.trim() : '';
     
     if(!hora || !nome) {
-        return alert("Preencha Hora e Nome do Beneficiário.");
+        return exibirModal('Atenção', 'Preencha Hora e Nome do Beneficiário.');
     }
+
     const regexTelefone = /^\(\d{2}\) \d \d{4}-\d{4}$/;
+    
     if (!contato) {
-        return alert("O telefone é obrigatório para realizar o encaixe.");
+        return exibirModal('Atenção', 'O telefone é obrigatório para realizar o encaixe.');
     }
 
     if (!regexTelefone.test(contato)) {
-        return alert("Telefone inválido! Use o formato: (85) 9 9999-9999");
+        return exibirModal('Atenção', 'Telefone inválido! Use o formato: (85) 9 9999-9999');
     }
 
     const btn = document.querySelector('#modalEncaixe button[onclick="salvarEncaixe()"]');
@@ -237,7 +239,8 @@ async function salvarEncaixe(force = false) {
         });
 
         if(response.ok) {
-            alert("Encaixe realizado com sucesso!");
+            exibirModal('Sucesso', 'Encaixe realizado com sucesso!');
+            
             fecharModal('modalEncaixe');
             document.getElementById('filtroData').value = new Date().toISOString().split('T')[0];
             carregarAgendamentos();
@@ -258,14 +261,15 @@ async function salvarEncaixe(force = false) {
                 
                 return;
             } else {
-                alert("Erro: " + erro.error);
+                // PADRONIZAÇÃO: Erros gerais da API
+                exibirModal('Erro', erro.error);
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
             }
         }
     } catch (e) {
         console.error(e);
-        alert("Erro de conexão");
+        exibirModal('Erro', 'Erro de conexão');
         btn.innerText = textoOriginal;
         btn.disabled = false;
     }
