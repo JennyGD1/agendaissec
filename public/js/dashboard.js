@@ -1,6 +1,5 @@
 const token = localStorage.getItem('maida_token');
 let userRole = 'guest';
-// Variáveis para guardar as instâncias dos gráficos (para poder destruir e recriar)
 let chartStatus, chartTipo, chartSemana, chartColabAgend, chartColabCancel;
 
 async function iniciarFirebase() {
@@ -19,7 +18,6 @@ iniciarFirebase();
 if (!token) {
     window.location.href = 'login.html';
 } else {
-    // Define data inicial como dia 1 do mês atual e data final como hoje
     const hoje = new Date();
     const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     
@@ -41,7 +39,6 @@ async function verificarPermissaoDashboard() {
         userRole = data.role;
         document.getElementById('user-display').textContent = data.email;
 
-        // SEGURANÇA: Bloqueia acesso se for Call Center
         if (userRole === 'call_center' || userRole === 'guest') {
             alert('Acesso não autorizado para este perfil.');
             window.location.href = 'index.html';
@@ -99,27 +96,72 @@ function atualizarKPIs(data) {
 }
 
 function renderizarGraficos(data) {
-    // Destruir gráficos anteriores se existirem para não sobrepor
+    const colors = {
+        bluePrimary: '#2979FF',   
+        pinkNeon: '#FF4081',      
+        yellow: '#FFC107',      
+        green: '#00C853',       
+        greyDark: '#616161',     
+        greyLight: '#E0E0E0'     
+    };
+
     if(chartStatus) chartStatus.destroy();
     if(chartTipo) chartTipo.destroy();
     if(chartSemana) chartSemana.destroy();
     if(chartColabAgend) chartColabAgend.destroy();
     if(chartColabCancel) chartColabCancel.destroy();
 
-    // 1. Gráfico de Status (Comparecimento) - PIE
+    Chart.register(ChartDataLabels);
+
+    const commonBarOptions = {
+        plugins: {
+            legend: { display: false }, 
+            datalabels: {
+                color: '#333', 
+                anchor: 'end', 
+                align: 'end',  
+                font: { weight: 'bold' },
+                formatter: Math.round 
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false, drawBorder: false }, // Remove grade vertical
+                ticks: { display: false } // Remove números do eixo X (fundo)
+            },
+            y: {
+                grid: { display: false, drawBorder: false }, // Remove grade horizontal
+            }
+        },
+        layout: {
+             padding: {
+                 right: 30,
+                 top: 20 
+             }
+        }
+    };
+
     const ctxStatus = document.getElementById('chartStatus').getContext('2d');
     chartStatus = new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
-            labels: ['Atendido', 'Não Compareceu', 'Pendente/Outros'],
+            labels: ['Atendido', 'Não Compareceu', 'Pendente'],
             datasets: [{
                 data: [data.status.atendido, data.status.nao_compareceu, data.status.pendente],
-                backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+                backgroundColor: [colors.green, colors.pinkNeon, colors.yellow],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                 datalabels: { color: '#fff', font: {weight: 'bold'} } 
+            },
+            cutout: '60%' 
         }
     });
 
-    // 2. Gráfico de Tipo (Normal vs Encaixe) - PIE
     const ctxTipo = document.getElementById('chartTipo').getContext('2d');
     chartTipo = new Chart(ctxTipo, {
         type: 'pie',
@@ -127,35 +169,54 @@ function renderizarGraficos(data) {
             labels: ['Normal', 'Encaixe'],
             datasets: [{
                 data: [data.tipo.normal, data.tipo.encaixe],
-                backgroundColor: ['#007bff', '#e83e8c']
+                backgroundColor: [colors.bluePrimary, colors.pinkNeon],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
+        },
+         options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: { color: '#fff', font: {weight: 'bold'} }
+            }
         }
     });
 
-    // 3. Gráfico de Fluxo Semanal - BAR
     const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const semanaOptions = JSON.parse(JSON.stringify(commonBarOptions));
+    semanaOptions.scales.y.ticks = { display: false };
+    semanaOptions.scales.x.ticks = { display: true, color: '#666' }; 
+    semanaOptions.plugins.datalabels.align = 'top';
+    semanaOptions.plugins.datalabels.anchor = 'end';
+
     const ctxSemana = document.getElementById('chartSemana').getContext('2d');
     chartSemana = new Chart(ctxSemana, {
         type: 'bar',
         data: {
             labels: diasSemana,
             datasets: [{
-                label: 'Agendamentos',
                 data: data.fluxo_semana,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                backgroundColor: colors.bluePrimary,
+                borderRadius: 6, 
+                barPercentage: 0.6 
             }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: semanaOptions
     });
 
-    // 4. Gráfico Agendamentos por Colaborador - BAR HORIZONTAL
-    const emailsAgend = Object.keys(data.colaboradores_agend);
+    const nomesAgend = Object.keys(data.colaboradores_agend).map(e => e.split('@')[0]);
     const qtdAgend = Object.values(data.colaboradores_agend);
     
-    // Tratamento para nomes curtos (pegar só antes do @)
-    const nomesAgend = emailsAgend.map(e => e.split('@')[0]);
+    const nomesCancel = Object.keys(data.colaboradores_cancel).map(e => e.split('@')[0]);
+    const qtdCancel = Object.values(data.colaboradores_cancel);
+
+    const horizontalOptions = JSON.parse(JSON.stringify(commonBarOptions));
+    horizontalOptions.indexAxis = 'y'; 
+    horizontalOptions.scales.y.ticks = { 
+        display: true,
+        color: '#333', 
+        font: { weight: '500' } 
+    };
 
     const ctxColabAgend = document.getElementById('chartColabAgend').getContext('2d');
     chartColabAgend = new Chart(ctxColabAgend, {
@@ -163,20 +224,14 @@ function renderizarGraficos(data) {
         data: {
             labels: nomesAgend,
             datasets: [{
-                label: 'Agendamentos Criados',
                 data: qtdAgend,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
+                backgroundColor: colors.bluePrimary,
+                borderRadius: 4,
+                barPercentage: 0.7
             }]
         },
-        options: { indexAxis: 'y' }
+        options: horizontalOptions
     });
-
-    // 5. Gráfico Cancelamentos por Colaborador - BAR HORIZONTAL
-    const emailsCancel = Object.keys(data.colaboradores_cancel);
-    const qtdCancel = Object.values(data.colaboradores_cancel);
-    const nomesCancel = emailsCancel.map(e => e.split('@')[0]);
 
     const ctxColabCancel = document.getElementById('chartColabCancel').getContext('2d');
     chartColabCancel = new Chart(ctxColabCancel, {
@@ -184,13 +239,12 @@ function renderizarGraficos(data) {
         data: {
             labels: nomesCancel,
             datasets: [{
-                label: 'Cancelamentos Realizados',
                 data: qtdCancel,
-                backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
+                backgroundColor: colors.pinkNeon,
+                borderRadius: 4,
+                barPercentage: 0.7
             }]
         },
-        options: { indexAxis: 'y' }
+        options: horizontalOptions
     });
 }
