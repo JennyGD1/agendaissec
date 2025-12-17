@@ -581,15 +581,16 @@
             <button class="modal-close-icon" onclick="fecharModal('modalCancelamento')">×</button>
             <div class="modal-title-custom">Confirmar Cancelamento</div>
             
-            <div class="modal-body-custom" style="text-align: left;">
-                <p>Para cancelar este agendamento e liberar o horário, informe o protocolo de atendimento:</p>
-                <div style="margin-top: 15px;">
-                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Protocolo:</label>
+            <div class="modal-body-custom">
+                <p style="margin-bottom: 15px;">Para cancelar este agendamento e liberar o horário, é obrigatório informar o protocolo de atendimento.</p>
+                
+                <div style="margin-bottom: 10px;">
+                    <label for="inputProtocoloCancelamento" style="display:block; margin-bottom:5px; font-weight:600; color:#333;">Protocolo:</label>
                     <input type="text" id="inputProtocoloCancelamento" 
-                           placeholder="Digite o protocolo..." 
+                           placeholder="Digite o número do protocolo..." 
                            class="input-moderno" 
                            oninput="verificarInputProtocolo()"
-                           style="width: 100%; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+                           autocomplete="off">
                 </div>
             </div>
 
