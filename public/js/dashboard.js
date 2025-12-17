@@ -97,12 +97,12 @@ function atualizarKPIs(data) {
 
 function renderizarGraficos(data) {
     const colors = {
-        bluePrimary: '#2979FF',   
-        pinkNeon: '#FF4081',      
-        yellow: '#FFC107',      
-        green: '#00C853',       
-        greyDark: '#616161',     
-        greyLight: '#E0E0E0'     
+        bluePrimary: '#2979FF',
+        pinkNeon: '#FF4081',
+        yellow: '#FFC107',
+        green: '#00C853',
+        greyDark: '#616161',
+        greyLight: '#E0E0E0'
     };
 
     if(chartStatus) chartStatus.destroy();
@@ -113,29 +113,40 @@ function renderizarGraficos(data) {
 
     Chart.register(ChartDataLabels);
 
+    const percentageFormatter = (value, ctx) => {
+        let sum = 0;
+        let dataArr = ctx.chart.data.datasets[0].data;
+        dataArr.map(data => {
+            sum += data;
+        });
+        if (sum === 0) return '0 (0%)';
+        let percentage = (value * 100 / sum).toFixed(1) + "%";
+        return value + ' (' + percentage + ')';
+    };
+
     const commonBarOptions = {
         plugins: {
-            legend: { display: false }, 
+            legend: { display: false },
             datalabels: {
-                color: '#333', 
-                anchor: 'end', 
-                align: 'end',  
+                color: '#333',
+                anchor: 'end',
+                align: 'end',
                 font: { weight: 'bold' },
-                formatter: Math.round 
+                formatter: Math.round
             }
         },
         scales: {
             x: {
-                grid: { display: false, drawBorder: false }, // Remove grade vertical
-                ticks: { display: false } // Remove números do eixo X (fundo)
+                grid: { display: false, drawBorder: false },
+                ticks: { display: false }
             },
             y: {
-                grid: { display: false, drawBorder: false }, // Remove grade horizontal
+                grid: { display: false, drawBorder: false },
             }
         },
         layout: {
              padding: {
-                 right: 30,
+                 right: 40,
                  top: 20 
              }
         }
@@ -156,9 +167,13 @@ function renderizarGraficos(data) {
         options: {
             plugins: {
                 legend: { position: 'bottom' },
-                 datalabels: { color: '#fff', font: {weight: 'bold'} } 
+                datalabels: { 
+                    color: '#fff', 
+                    font: { weight: 'bold', size: 11 },
+                    formatter: percentageFormatter
+                }
             },
-            cutout: '60%' 
+            cutout: '60%'
         }
     });
 
@@ -177,7 +192,11 @@ function renderizarGraficos(data) {
          options: {
             plugins: {
                 legend: { position: 'bottom' },
-                datalabels: { color: '#fff', font: {weight: 'bold'} }
+                datalabels: { 
+                    color: '#fff', 
+                    font: { weight: 'bold', size: 12 },
+                    formatter: percentageFormatter
+                }
             }
         }
     });
@@ -185,7 +204,7 @@ function renderizarGraficos(data) {
     const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const semanaOptions = JSON.parse(JSON.stringify(commonBarOptions));
     semanaOptions.scales.y.ticks = { display: false };
-    semanaOptions.scales.x.ticks = { display: true, color: '#666' }; 
+    semanaOptions.scales.x.ticks = { display: true, color: '#666' };
     semanaOptions.plugins.datalabels.align = 'top';
     semanaOptions.plugins.datalabels.anchor = 'end';
 
@@ -197,8 +216,8 @@ function renderizarGraficos(data) {
             datasets: [{
                 data: data.fluxo_semana,
                 backgroundColor: colors.bluePrimary,
-                borderRadius: 6, 
-                barPercentage: 0.6 
+                borderRadius: 6,
+                barPercentage: 0.6
             }]
         },
         options: semanaOptions
@@ -211,9 +230,9 @@ function renderizarGraficos(data) {
     const qtdCancel = Object.values(data.colaboradores_cancel);
 
     const horizontalOptions = JSON.parse(JSON.stringify(commonBarOptions));
-    horizontalOptions.indexAxis = 'y'; 
+    horizontalOptions.indexAxis = 'y';
     horizontalOptions.scales.y.ticks = { 
-        display: true,
+        display: true, 
         color: '#333', 
         font: { weight: '500' } 
     };
