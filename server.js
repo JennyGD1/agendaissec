@@ -548,6 +548,81 @@ app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao
         res.status(500).json({ error: 'Erro ao gerar relatório.' });
     }
 });
+app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'recepcao', 'cliente']), async (req, res) => {
+    const { inicio, fim } = req.query;
+
+    if (!inicio || !fim) {
+        return res.status(400).json({ error: 'Datas obrigatórias.' });
+    }
+
+    try {
+        const queryAgendamentos = `
+            SELECT 
+                a.status,
+                a.is_encaixe,
+                a.colaborador_email,
+                EXTRACT(DOW FROM s.data_hora) as dia_semana
+            FROM appointments a
+            JOIN slots s ON a.slot_id = s.id
+            WHERE s.data_hora::date BETWEEN $1 AND $2
+        `;
+        
+        const queryCancelamentos = `
+            SELECT quem_cancelou 
+            FROM cancelamentos 
+            WHERE data_cancelamento::date BETWEEN $1 AND $2
+        `;
+
+        const [resultAgendamentos, resultCancelamentos] = await Promise.all([
+            pool.query(queryAgendamentos, [inicio, fim]),
+            pool.query(queryCancelamentos, [inicio, fim])
+        ]);
+
+        const agendamentos = resultAgendamentos.rows;
+        const cancelamentos = resultCancelamentos.rows;
+
+        const stats = {
+            total: agendamentos.length,
+            
+            status: {
+                atendido: agendamentos.filter(a => a.status === 'Atendido').length,
+                nao_compareceu: agendamentos.filter(a => a.status === 'Não Compareceu').length,
+                pendente: agendamentos.filter(a => a.status === 'Agendado' || a.status === 'Aguardando').length
+            },
+
+            tipo: {
+                normal: agendamentos.filter(a => !a.is_encaixe).length,
+                encaixe: agendamentos.filter(a => a.is_encaixe).length
+            },
+
+            colaboradores_agend: {},
+            
+            colaboradores_cancel: {},
+
+            fluxo_semana: [0, 0, 0, 0, 0, 0, 0] 
+        };
+
+        agendamentos.forEach(a => {
+            const email = a.colaborador_email || 'Sistema/Desconhecido';
+            stats.colaboradores_agend[email] = (stats.colaboradores_agend[email] || 0) + 1;
+
+            if (a.dia_semana !== null) {
+                stats.fluxo_semana[Math.floor(a.dia_semana)]++;
+            }
+        });
+
+        cancelamentos.forEach(c => {
+            const email = c.quem_cancelou || 'Sistema';
+            stats.colaboradores_cancel[email] = (stats.colaboradores_cancel[email] || 0) + 1;
+        });
+
+        res.json(stats);
+
+    } catch (error) {
+        console.error("Erro dashboard:", error);
+        res.status(500).json({ error: 'Erro ao gerar dados do dashboard.' });
+    }
+});
 app.get('/', (req, res) => {
     res.redirect('/html/login.html');
 });
