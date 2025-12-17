@@ -105,3 +105,24 @@ canvas {
     max-height: 300px;
     width: 100% !important;
 }
+.btn-voltar { 
+    background-color: #4da6ff; 
+    color: white; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    text-decoration: none; 
+    font-size: 0.9rem; 
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: inline-flex;
+    align-items: center;
+    margin-right: 15px; /* Espaçamento para o user-info */
+}
+
+.btn-voltar:hover { 
+    background-color: #80bfff; 
+    text-decoration: none; 
+    transform: translateY(-1px); 
+    color: white;
+}
