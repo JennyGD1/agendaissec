@@ -215,10 +215,10 @@ async function salvarEncaixe(force = false) {
         return exibirModal('Atenção', 'Telefone inválido! Use o formato: (85) 9 9999-9999');
     }
 
-    const btn = document.querySelector('#modalEncaixe button[onclick="salvarEncaixe()"]');
+    const btn = document.getElementById('btnConfirmarEncaixe');
     const textoOriginal = "Confirmar Encaixe";
     
-    if (!force) {
+    if (btn && !force) {
         btn.innerText = "Salvando...";
         btn.disabled = true;
     }
@@ -250,28 +250,32 @@ async function salvarEncaixe(force = false) {
             document.getElementById('encaixeContato').value = '';
             document.getElementById('encaixeObs').value = '';
             
-            btn.innerText = textoOriginal;
-            btn.disabled = false;
+            if (btn) {
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
         } else {
             const erro = await response.json();
             
             if (response.status === 409 && erro.type === 'DUPLICATE_ENTRY') {
                 document.getElementById('horaDuplicidadeTxt').innerText = erro.hora;
                 document.getElementById('modalDuplicidade').style.display = 'flex';
-                
                 return;
             } else {
-                // PADRONIZAÇÃO: Erros gerais da API
-                exibirModal('Erro', erro.error);
-                btn.innerText = textoOriginal;
-                btn.disabled = false;
+                exibirModal('Erro', erro.error || 'Erro desconhecido');
+                if (btn) {
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                }
             }
         }
     } catch (e) {
         console.error(e);
         exibirModal('Erro', 'Erro de conexão');
-        btn.innerText = textoOriginal;
-        btn.disabled = false;
+        if (btn) {
+            btn.innerText = textoOriginal;
+            btn.disabled = false;
+        }
     }
 }
 
