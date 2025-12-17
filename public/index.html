@@ -576,6 +576,29 @@
             <div id="modalObsTexto" class="modal-body-custom" style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #eee; text-align:left;"></div>
         </div>
     </div>
+    <div id="modalCancelamento" class="modal-overlay-custom">
+        <div class="modal-content-custom">
+            <button class="modal-close-icon" onclick="fecharModal('modalCancelamento')">×</button>
+            <div class="modal-title-custom">Confirmar Cancelamento</div>
+            
+            <div class="modal-body-custom" style="text-align: left;">
+                <p>Para cancelar este agendamento e liberar o horário, informe o protocolo de atendimento:</p>
+                <div style="margin-top: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Protocolo:</label>
+                    <input type="text" id="inputProtocoloCancelamento" 
+                           placeholder="Digite o protocolo..." 
+                           class="input-moderno" 
+                           oninput="verificarInputProtocolo()"
+                           style="width: 100%; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+                </div>
+            </div>
+
+            <div class="modal-actions-custom">
+                <button class="btn-modal-custom btn-cancel-custom" onclick="fecharModal('modalCancelamento')">Voltar</button>
+                <button id="btnConfirmarCancelamento" class="btn-modal-custom btn-confirm-custom" onclick="executarCancelamento()" disabled style="opacity: 0.6; cursor: not-allowed;">Confirmar</button>
+            </div>
+        </div>
+    </div>
     <button id="btnEncaixe" class="fab-encaixe" onclick="abrirModalEncaixe()" title="Realizar Encaixe (Hoje)">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
     </button>
@@ -640,7 +663,9 @@
         const userName = localStorage.getItem('maida_user_name');
         let filtroStatusAtual = null;
         let userRole = 'guest'; 
+        let idAgendamentoParaCancelar = null; 
         
+        // --- INICIALIZAÇÃO FIREBASE ---
         async function iniciarFirebase() {
             try {
                 const res = await fetch('/api/firebase-config');
@@ -654,6 +679,7 @@
         }
         iniciarFirebase();
 
+        // --- VERIFICAÇÃO DE LOGIN ---
         if (!token) {
             window.location.href = 'login.html';
         } else {
@@ -662,6 +688,7 @@
             checarPermissoes(); 
         }
 
+        // --- PERMISSÕES E RESTRIÇÕES VISUAIS ---
         async function checarPermissoes() {
             if (!token) return;
 
@@ -695,21 +722,20 @@
             const menuFuncoes = document.getElementById('menu-funcoes');
             const btnEncaixe = document.getElementById('btnEncaixe');
 
+            // Reset inicial (esconde tudo)
             if(linkAgendar) linkAgendar.style.display = 'none';
             if(linkGerenciar) linkGerenciar.style.display = 'none';
             if(menuFuncoes) menuFuncoes.style.display = 'none';
             if(btnEncaixe) btnEncaixe.style.display = 'none';
 
-
+            // Lógica por Cargo
             if (userRole === 'cliente') {
-                if(menuFuncoes) menuFuncoes.style.display = 'inline-block'; // Pode ver relatórios
+                if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
             }
-            
             else if (userRole === 'call_center') {
                 if(linkAgendar) linkAgendar.style.display = 'inline-block';
                 if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
             }
-
             else if (userRole === 'admin' || userRole === 'recepcao') {
                 if(linkAgendar) linkAgendar.style.display = 'inline-block';
                 if(linkGerenciar) linkGerenciar.style.display = 'inline-block'; 
@@ -733,6 +759,69 @@
             }
         }
 
+        // --- LÓGICA DE CANCELAMENTO (NOVO) ---
+        function abrirModalCancelamento(id) {
+            idAgendamentoParaCancelar = id;
+            document.getElementById('inputProtocoloCancelamento').value = ''; 
+            verificarInputProtocolo(); 
+            document.getElementById('modalCancelamento').style.display = 'flex';
+            setTimeout(() => document.getElementById('inputProtocoloCancelamento').focus(), 100);
+        }
+
+        function verificarInputProtocolo() {
+            const input = document.getElementById('inputProtocoloCancelamento').value;
+            const btn = document.getElementById('btnConfirmarCancelamento');
+            
+            // Só libera o botão se tiver texto
+            if (input && input.trim().length > 0) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+
+        async function executarCancelamento() {
+            if (!idAgendamentoParaCancelar) return;
+            
+            const protocolo = document.getElementById('inputProtocoloCancelamento').value;
+            const btn = document.getElementById('btnConfirmarCancelamento');
+            
+            btn.innerText = 'Processando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/agendamentos/${idAgendamentoParaCancelar}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ protocolo: protocolo }) // Envia o protocolo no corpo
+                });
+
+                if (response.ok) {
+                    alert('Cancelamento realizado com sucesso!');
+                    fecharModal('modalCancelamento');
+                    carregarAgendamentos(); 
+                    if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
+                } else {
+                    const erro = await response.json();
+                    alert('Erro: ' + (erro.error || 'Falha ao cancelar'));
+                }
+            } catch (error) { 
+                console.error(error);
+                alert('Erro de conexão.'); 
+            } finally {
+                btn.innerText = 'Confirmar';
+                btn.disabled = false;
+            }
+        }
+
+        // --- ENCAIXE (ADMIN/RECEPÇÃO) ---
         function abrirModalEncaixe() {
             const agora = new Date();
             const horaFormatada = agora.toTimeString().substring(0,5);
@@ -777,20 +866,26 @@
             }
         }
 
-        async function salvarEncaixe() {
+        async function salvarEncaixe(force = false) {
             const hora = document.getElementById('encaixeHora').value;
             const nome = document.getElementById('encaixeNome').value;
             const cartao = document.getElementById('encaixeCartao').value;
             
-            if(!hora || !nome || !cartao) {
-                return alert("Preencha Hora, Nome e selecione um Beneficiário.");
+            if(!hora || !nome) {
+                return alert("Preencha Hora e Nome do Beneficiário.");
             }
+
+            const btn = document.querySelector('#modalEncaixe button[onclick="salvarEncaixe()"]');
+            const textoOriginal = btn.innerText;
+            btn.innerText = "Salvando...";
+            btn.disabled = true;
 
             const payload = {
                 hora, nome, cartao,
                 contato: document.getElementById('encaixeContato').value,
                 regiao: document.getElementById('encaixeRegiao').value,
-                obs: document.getElementById('encaixeObs').value
+                obs: document.getElementById('encaixeObs').value,
+                force: force 
             };
 
             try {
@@ -805,14 +900,36 @@
                     fecharModal('modalEncaixe');
                     document.getElementById('filtroData').value = new Date().toISOString().split('T')[0];
                     carregarAgendamentos();
+                    
+                    document.getElementById('encaixeNome').value = '';
+                    document.getElementById('encaixeCartao').value = '';
+                    document.getElementById('encaixeContato').value = '';
+                    document.getElementById('encaixeObs').value = '';
                 } else {
                     const erro = await response.json();
-                    alert("Erro: " + erro.error);
+                    
+                    if (response.status === 409 && erro.type === 'DUPLICATE_ENTRY') {
+                        const confirmar = confirm(`ATENÇÃO:\nEste paciente já possui um agendamento hoje às ${erro.hora}.\n\nDeseja realizar este encaixe mesmo assim?`);
+                        if (confirmar) {
+                            salvarEncaixe(true);
+                            return; 
+                        }
+                    } else {
+                        alert("Erro: " + erro.error);
+                    }
                 }
             } catch (e) {
+                console.error(e);
                 alert("Erro de conexão");
+            } finally {
+                if (!force) { 
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                }
             }
         }
+
+        // --- SISTEMA DE MODAIS E OBSERVAÇÕES ---
         function exibirModal(titulo, mensagem, callbackConfirmacao = null) {
             const modal = document.getElementById('modalSistema');
             const tituloEl = document.getElementById('modalTitulo');
@@ -847,6 +964,7 @@
         }
 
         function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+        
         function abrirModalObs(texto) {
             document.getElementById('modalObsTexto').innerText = texto;
             document.getElementById('modalObs').style.display = 'flex';
@@ -858,6 +976,7 @@
             }
         }
 
+        // --- LISTAGEM E FILTROS ---
         function filtrarPorStatus(status) {
             filtroStatusAtual = status;
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -929,14 +1048,21 @@
                                   </button>`;
                     }
 
+                    // --- LÓGICA DE PERMISSÃO ATUALIZADA ---
+                    
+                    // STATUS: Apenas Admin e Recepção podem mudar o status (Ex: de Agendado para Atendido)
+                    // Call Center não pode mudar status, apenas cancelar.
+                    const podeMudarStatus = ['admin', 'recepcao'].includes(userRole);
+                    const disabledStatus = podeMudarStatus ? '' : 'disabled';
+
+                    // CANCELAR: Admin, Recepção e Call Center podem cancelar
                     let btnCancelar = '';
                     if (['admin', 'recepcao', 'call_center'].includes(userRole)) {
-                        btnCancelar = `<button class="btn-icon btn-cancelar" onclick="cancelarAgendamento(${item.id})" title="Cancelar Agendamento">
+                        // Chama o novo modal que pede protocolo
+                        btnCancelar = `<button class="btn-icon btn-cancelar" onclick="abrirModalCancelamento(${item.id})" title="Cancelar Agendamento">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                          </button>`;
                     }
-
-                    const disabled = (userRole === 'cliente' || userRole === 'guest') ? 'disabled' : '';
 
                     tr.innerHTML = `
                         <td style="font-weight:bold; white-space: nowrap;">${item.horario}</td>
@@ -945,7 +1071,7 @@
                         <td>${item.contato}</td>
                         <td>${item.regiao}</td>
                         <td style="text-align: center;">
-                            <select onchange="alterarStatus(${item.id}, this)" class="status-select ${classeStatus}" ${disabled}>
+                            <select onchange="alterarStatus(${item.id}, this)" class="status-select ${classeStatus}" ${disabledStatus}>
                                 <option value="Agendado" ${statusNormalizado === 'Agendado' ? 'selected' : ''}>Reservado</option>
                                 <option value="Aguardando" ${statusNormalizado === 'Aguardando' ? 'selected' : ''}>Aguardando</option>
                                 <option value="Atendido" ${statusNormalizado === 'Atendido' ? 'selected' : ''}>Atendido</option>
@@ -967,7 +1093,12 @@
         }
 
         async function alterarStatus(id, selectElement) {
-            if (userRole === 'cliente') return;
+            // Proteção extra no clique
+            if (userRole !== 'admin' && userRole !== 'recepcao') {
+                alert('Você não tem permissão para alterar o status.');
+                carregarAgendamentos(); // Reseta visualmente
+                return;
+            }
             
             const novoStatus = selectElement.value;
             const classe = novoStatus.toLowerCase().replace(/ /g, '-').replace('ã', 'a');
@@ -981,24 +1112,6 @@
                 carregarAgendamentos(); 
                 if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
             } catch (error) { exibirModal('Erro', 'Erro ao atualizar status.'); }
-        }
-
-        function cancelarAgendamento(id) {
-            exibirModal('Confirmar Cancelamento', 'Tem certeza que deseja cancelar este agendamento? O horário ficará livre novamente.', async () => {
-                try {
-                    const response = await fetch(`/api/agendamentos/${id}`, {
-                        method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
-                    });
-                    if (response.ok) {
-                        exibirModal('Sucesso', 'Agendamento cancelado!');
-                        carregarAgendamentos(); 
-                        if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
-                    } else {
-                        const erro = await response.json();
-                        exibirModal('Erro', 'Erro: ' + (erro.error || 'Falha ao cancelar'));
-                    }
-                } catch (error) { exibirModal('Erro', 'Erro de conexão.'); }
-            });
         }
 
         document.getElementById('filtroData').addEventListener('change', carregarAgendamentos);

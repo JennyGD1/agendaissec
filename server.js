@@ -343,13 +343,39 @@ app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepc
 app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const client = await pool.connect();
     const colaborador = req.user.email;
-    const { nome, cartao, hora, contato, regiao, obs } = req.body;
+    const { nome, cartao, hora, contato, regiao, obs, force } = req.body;
 
     const hoje = new Date().toISOString().split('T')[0]; 
     const dataHoraCompleta = `${hoje} ${hora}:00`;
 
     try {
         await client.query('BEGIN');
+
+        if (!force) {
+            const checkQuery = `
+                SELECT to_char(s.data_hora, 'HH24:MI') as hora_existente
+                FROM appointments a
+                JOIN slots s ON a.slot_id = s.id
+                WHERE s.data_hora::date = $1
+                AND (
+                    (a.numero_cartao = $2 AND a.numero_cartao <> '') 
+                    OR 
+                    LOWER(a.nome_beneficiario) = LOWER($3)
+                )
+                AND a.status NOT IN ('Não Compareceu')
+            `;
+            
+            const checkResult = await client.query(checkQuery, [hoje, cartao || '', nome]);
+
+            if (checkResult.rowCount > 0) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({ 
+                    error: 'Duplicidade detectada', 
+                    type: 'DUPLICATE_ENTRY',
+                    hora: checkResult.rows[0].hora_existente 
+                });
+            }
+        }
 
         let slotResult = await client.query(
             `INSERT INTO slots (data_hora, disponivel) 
@@ -381,30 +407,56 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
     }
 });
 
-app.delete('/api/agendamentos/:id', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+app.delete('/api/agendamentos/:id', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center']), async (req, res) => {
     const client = await pool.connect();
     const id = req.params.id;
+    const { protocolo } = req.body;
+    const quemCancelou = req.user.email;
+
+    if (!protocolo || protocolo.trim() === '') {
+        return res.status(400).json({ error: 'O número de protocolo é obrigatório para realizar o cancelamento.' });
+    }
 
     try {
         await client.query('BEGIN');
-        const busca = await client.query('SELECT slot_id FROM appointments WHERE id = $1', [id]);
+
+        const busca = await client.query(`
+            SELECT a.nome_beneficiario, a.numero_cartao, a.slot_id, s.data_hora
+            FROM appointments a
+            JOIN slots s ON a.slot_id = s.id
+            WHERE a.id = $1
+        `, [id]);
         
         if (busca.rowCount === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Agendamento não encontrado.' });
         }
 
-        const slotId = busca.rows[0].slot_id;
+        const dadosAgendamento = busca.rows[0];
+
+        await client.query(`
+            INSERT INTO cancelamentos (data_hora_agendamento, nome_beneficiario, numero_cartao, quem_cancelou, protocolo)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [
+            dadosAgendamento.data_hora, 
+            dadosAgendamento.nome_beneficiario, 
+            dadosAgendamento.numero_cartao, 
+            quemCancelou, 
+            protocolo
+        ]);
+
         await client.query('DELETE FROM appointments WHERE id = $1', [id]);
 
-        if (slotId) {
-            await client.query('UPDATE slots SET disponivel = TRUE WHERE id = $1', [slotId]);
+        if (dadosAgendamento.slot_id) {
+            await client.query('UPDATE slots SET disponivel = TRUE WHERE id = $1', [dadosAgendamento.slot_id]);
         }
 
         await client.query('COMMIT');
-        res.json({ success: true, message: 'Agendamento cancelado e horário liberado.' });
+        res.json({ success: true, message: 'Agendamento cancelado, horário liberado e histórico salvo.' });
+
     } catch (error) {
         await client.query('ROLLBACK');
+        console.error("Erro no cancelamento:", error);
         res.status(500).json({ error: 'Erro ao processar cancelamento.' });
     } finally {
         client.release();
