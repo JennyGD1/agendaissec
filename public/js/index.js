@@ -135,17 +135,19 @@ async function executarCancelamento() {
         });
 
         if (response.ok) {
-            alert('Cancelamento realizado com sucesso!');
             fecharModal('modalCancelamento');
+            
+            exibirModal('Sucesso', 'Cancelamento realizado com sucesso!');
+            
             carregarAgendamentos();
             if (userRole === 'admin' || userRole === 'recepcao') verificarPendencias();
         } else {
             const erro = await response.json();
-            alert('Erro: ' + (erro.error || 'Falha ao cancelar'));
+            exibirModal('Erro', erro.error || 'Falha ao cancelar');
         }
     } catch (error) {
         console.error(error);
-        alert('Erro de conexão.');
+        exibirModal('Erro', 'Erro de conexão.');
     } finally {
         btn.innerText = 'Confirmar';
         btn.disabled = false;
