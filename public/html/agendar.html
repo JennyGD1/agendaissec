@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' http://localhost:3000 https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Agendamento - Maida</title>
+    <link rel="stylesheet" href="../css/agendar.css">
+</head>
+<body>
+    <div id="loading-overlay">Verificando autenticação...</div>
+
+    <nav>
+        <div class="logo">
+            <img src="../img/logo_maida_branca.png" alt="Maida Atendimento">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" class="btn-voltar">← Voltar ao Painel</a>
+            
+            <div class="user-info">
+                <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    
+
+    <main>
+        <div class="container-form">
+            <div class="painel">
+                <div class="form-group">
+                    <label>Selecione o Dia:</label>
+                    <input type="date" id="filtroData" class="input-moderno">
+                </div>
+
+                <div class="form-group">
+                    <label>Horários Disponíveis:</label>
+                    <div id="container-horarios" class="grade-horarios">
+                        <p>Selecione uma data acima.</p>
+                    </div>
+                    <input type="hidden" id="slotIdSelecionado">
+                </div>
+
+                <div class="form-group">
+                    <label>Atendente</label>
+                    <input type="text" id="atendente" value="Carregando..." readonly class="input-moderno input-readonly">
+                </div>
+            </div>
+
+            <div class="painel">
+                <div class="form-group form-group-busca">
+                    <label>Nome do Beneficiário (Busca no ISSEC)</label>
+                    <div class="busca-container">
+                        <input type="text" id="buscaNome" placeholder="Digite nome ou CPF..." autocomplete="off" class="input-moderno">
+                        <button type="button" class="btn-buscar" onclick="executarBuscaManual()"> Buscar</button>
+                    </div>
+                    <ul id="listaSugestoes" class="sugestoes-lista"></ul>
+                </div>
+
+                <div class="form-group">
+                    <label>Nº Carteirinha</label>
+                    <input type="text" id="numCartao" readonly class="input-moderno input-readonly">
+                </div>
+
+                <div class="form-group">
+                    <label>Email do Beneficiário</label>
+                    <input type="email" id="email" placeholder="email@exemplo.com" class="input-moderno">
+                </div>
+
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="text" id="contato" placeholder="(85) 99999-9999" class="input-moderno">
+                </div>
+
+                <div class="form-group">
+                    <label>Região</label>
+                    <select id="regiao" class="input-moderno">
+                        <option value="Capital">Capital</option>
+                        <option value="Metropolitana">Metropolitana</option>
+                        <option value="Interior">Interior</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Observação</label>
+                    <textarea id="obs" rows="3" class="input-moderno"></textarea>
+                </div>
+
+                <button class="btn-salvar" onclick="salvarAgendamento()">Confirmar Agendamento</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal('modal-confirm')">×</button>
+            <div class="modal-header">Confirmar Ação</div>
+            <div class="modal-body" id="modal-confirm-texto"></div>
+            <div class="modal-confirm-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="fecharModal('modal-confirm')">Cancelar</button>
+                <button class="modal-btn modal-btn-confirm" onclick="executarAcaoConfirmada()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert" class="modal-overlay">
+        <div class="modal-content modal-alert-content">
+            <button class="modal-close" onclick="fecharModal('modal-alert')">×</button>
+            <div class="modal-header" id="modal-alert-titulo">Alerta</div>
+            <div class="modal-body" id="modal-alert-texto"></div>
+            <div class="modal-confirm-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="fecharModal('modal-alert')">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-sucesso-copy" class="modal-overlay" style="z-index: 2000;">
+        <div class="modal-content modal-alert-content">
+            <button class="modal-close" onclick="fecharModalSucesso()">×</button>
+            
+            <div class="modal-alert-icon" style="color: #28a745;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            
+            <div class="modal-header" style="border:none; margin-bottom: 5px;">Agendamento Realizado!</div>
+            
+            <div class="box-info-copy">
+                <span id="texto-para-copiar">Carregando informações...</span>
+            </div>
+
+            <button class="btn-action-copy" onclick="copiarTextoAgendamento()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copiar Texto
+            </button>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="../js/agendar.js"></script>
+</body>
+</html>

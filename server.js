@@ -37,7 +37,6 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-
 const verificarAuth = async (req, res, next) => {
     if (!admin.apps.length) return next();
 
@@ -96,7 +95,6 @@ const verificarPermissao = (cargosPermitidos) => {
         return res.status(403).json({ error: 'Acesso negado para seu perfil: ' + cargo });
     };
 };
-
 
 app.get('/api/me', verificarAuth, (req, res) => {
     const email = req.user.email;
@@ -213,7 +211,7 @@ app.get('/api/admin/slots', verificarAuth, verificarPermissao(['admin', 'recepca
 });
 
 app.post('/api/admin/slots', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
-    const { datas, slots } = req.body; 
+    const { datas, slots } = req.body;
 
     if (!datas || !Array.isArray(datas) || datas.length === 0 || !slots || slots.length === 0) {
         return res.status(400).json({ error: 'Datas e horários são obrigatórios.' });
@@ -238,7 +236,7 @@ app.post('/api/admin/slots', verificarAuth, verificarPermissao(['admin', 'recepc
         await client.query('COMMIT');
         res.json({ message: 'Horários criados com sucesso para os dias selecionados.' });
     } catch (error) {
-        await client.query('ROLLBACK'); 
+        await client.query('ROLLBACK');
         console.error("Erro criar slots:", error);
         res.status(500).json({ error: 'Erro ao criar horários.' });
     } finally {
@@ -345,7 +343,7 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
     const colaborador = req.user.email;
     const { nome, cartao, hora, contato, regiao, obs, force } = req.body;
 
-    const hoje = new Date().toISOString().split('T')[0]; 
+    const hoje = new Date().toISOString().split('T')[0];
     const dataHoraCompleta = `${hoje} ${hora}:00`;
 
     try {
@@ -438,10 +436,10 @@ app.delete('/api/agendamentos/:id', verificarAuth, verificarPermissao(['admin', 
             INSERT INTO cancelamentos (data_hora_agendamento, nome_beneficiario, numero_cartao, quem_cancelou, protocolo)
             VALUES ($1, $2, $3, $4, $5)
         `, [
-            dadosAgendamento.data_hora, 
-            dadosAgendamento.nome_beneficiario, 
-            dadosAgendamento.numero_cartao, 
-            quemCancelou, 
+            dadosAgendamento.data_hora,
+            dadosAgendamento.nome_beneficiario,
+            dadosAgendamento.numero_cartao,
+            quemCancelou,
             protocolo
         ]);
 
@@ -525,7 +523,7 @@ app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao
             FROM appointments a
             JOIN slots s ON a.slot_id = s.id
             WHERE s.data_hora::date BETWEEN $1 AND $2
-            AND a.status IN ('Atendido', 'Não Compareceu') 
+            AND a.status IN ('Atendido', 'Não Compareceu')
             ORDER BY s.data_hora ASC
         `;
 
@@ -541,7 +539,7 @@ app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao
                 interior: rows.filter(r => r.regiao === 'Interior').length,
                 metropolitana: rows.filter(r => r.regiao === 'Metropolitana').length
             },
-            lista_detalhada: rows 
+            lista_detalhada: rows
         };
 
         res.json(stats);
@@ -550,7 +548,13 @@ app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao
         res.status(500).json({ error: 'Erro ao gerar relatório.' });
     }
 });
+app.get('/', (req, res) => {
+    res.redirect('/html/login.html');
+});
 
+app.get('/login', (req, res) => {
+    res.redirect('/html/login.html');
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

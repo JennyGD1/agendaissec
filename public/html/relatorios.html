@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Maida Health</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="../css/relatorios.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="logo">Maida Health</div>
+        <a href="index.html">Sair</a>
+    </nav>
+
+    <div class="toolbar">
+        <a href="index.html" class="btn-voltar">← Voltar</a>
+        <input type="date" id="dataInicio" class="input-date">
+        <input type="date" id="dataFim" class="input-date">
+        <button class="btn-action btn-gerar" onclick="buscarDados()">Visualizar</button>
+        <button class="btn-action btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+    </div>
+
+    <div class="page-container" id="relatorioVisual">
+        <img src="./img/logo_maida.png" id="logoImgHidden" style="display:none;" alt="Logo Maida">
+        
+        <div class="header-timbrado">
+            <img src="./img/logo_maida.png" alt="Maida Health" onerror="this.style.display='none'">
+            <div class="header-info">
+                Relatório Gerencial<br>
+                Portal de Agendamentos - ISSEC
+            </div>
+        </div>
+
+        <div id="conteudoDinamico">
+            <div style="text-align: center; padding: 50px; color: #999;">
+                Selecione o período acima e clique em "Visualizar".
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/relatorios.js"></script>
+</body>
+</html>

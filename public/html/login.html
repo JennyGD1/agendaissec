@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Maida</title>
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div id="loading-overlay">Processando login...</div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <img src="../img/logo_maidaescura.png" alt="Maida Logo" class="login-logo">
+            <p>Utilize suas credenciais do Google para entrar</p>
+        </div>
+        
+        <button class="btn-google" onclick="fazerLoginGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+            Entrar com Google
+        </button>
+    </div>
+
+    <div id="modalSistema" class="modal-overlay-custom">
+        <div class="modal-content-custom">
+            <div id="modalTitulo" class="modal-title-custom">Atenção</div>
+            <div id="modalMensagem" class="modal-body-custom"></div>
+            <div id="modalBotoes" class="modal-actions-custom"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="../js/login.js"></script>
+</body>
+</html>
