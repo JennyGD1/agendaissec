@@ -1,0 +1,75 @@
+/* Herda estilos do index.css se estiverem carregados ou copie as classes base */
+
+/* Ajuste específico para o Header */
+.header-pericia {
+    margin-bottom: 20px;
+}
+
+.header-pericia h1 {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+/* Badge de Status na Tabela */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-badge.autorizado {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.indeferido {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.autorizado_parcialmente {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Botão salvar do modal */
+#btnSalvarRegistro {
+    width: 100%;
+    background-color: #0066cc;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.2s;
+}
+
+#btnSalvarRegistro:hover {
+    background-color: #0056b3;
+}
+
+.btn-voltar { 
+    background-color: #4da6ff; 
+    color: white; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    text-decoration: none; 
+    font-size: 0.9rem; 
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: inline-flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.btn-voltar:hover { 
+    background-color: #80bfff; 
+    text-decoration: none; 
+    transform: translateY(-1px); 
+    color: white;
+}
