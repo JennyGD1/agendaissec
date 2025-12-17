@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Maida</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="../img/logo_maida_branca.png" alt="Maida Atendimento">
+        </div>
+        <div class="user-info">
+            <span id="user-display">Carregando...</span>
+            <a href="index.html">Voltar ao Início</a>
+            <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="header-dashboard">
+            <h1>Dashboard Analítico</h1>
+            
+            <div class="filtros-dashboard">
+                <div>
+                    <label>Data Início:</label>
+                    <input type="date" id="dataInicio" class="input-moderno">
+                </div>
+                <div>
+                    <label>Data Fim:</label>
+                    <input type="date" id="dataFim" class="input-moderno">
+                </div>
+                <button onclick="carregarDadosDashboard()" class="btn-filtrar">Filtrar</button>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="dash-card">
+                <h3>Total Agendamentos</h3>
+                <p class="big-number" id="kpi-total">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Atendimentos Realizados</h3>
+                <p class="big-number" id="kpi-atendidos" style="color: #28a745;">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Não Compareceu</h3>
+                <p class="big-number" id="kpi-absenteismo" style="color: #dc3545;">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Encaixes</h3>
+                <p class="big-number" id="kpi-encaixes" style="color: #ffc107;">0</p>
+            </div>
+        </div>
+
+        <div class="charts-wrapper">
+            
+            <div class="chart-container half-width">
+                <h3>Comparecimento (Atendido vs Faltas)</h3>
+                <canvas id="chartStatus"></canvas>
+            </div>
+
+            <div class="chart-container half-width">
+                <h3>Tipo de Agendamento</h3>
+                <canvas id="chartTipo"></canvas>
+            </div>
+
+            <div class="chart-container full-width">
+                <h3>Fluxo por Dia da Semana</h3>
+                <canvas id="chartSemana"></canvas>
+            </div>
+
+            <div class="chart-container full-width">
+                <h3>Produtividade: Agendamentos por Colaborador</h3>
+                <canvas id="chartColabAgend"></canvas>
+            </div>
+
+            <div class="chart-container full-width">
+                <h3>Auditoria: Cancelamentos por Colaborador</h3>
+                <canvas id="chartColabCancel"></canvas>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
