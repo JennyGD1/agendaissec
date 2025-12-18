@@ -139,21 +139,22 @@
     <div id="modalCancelamento" class="modal-overlay-custom">
         <div class="modal-content-custom">
             <button class="modal-close-icon" onclick="fecharModal('modalCancelamento')">×</button>
-            <div class="modal-title-custom">Confirmar Cancelamento</div>
+            <div class="modal-title-custom">Cancelar Agendamento</div>
             
             <div class="modal-body-custom">
-                <p>Para cancelar este agendamento e liberar o horário, é obrigatório informar o protocolo de atendimento.</p>
+                <p><strong>Para cancelar e liberar o horário, informe o protocolo:</strong></p>
                 
                 <div>
-                    <label for="inputProtocoloCancelamento">Protocolo:</label>
+                    <label for="inputProtocoloCancelamento">Número do Protocolo:</label>
                     <input type="text" id="inputProtocoloCancelamento" 
-                           placeholder="Digite o número do protocolo..." 
+                           placeholder="Ex: 2024123456" 
                            class="input-moderno" 
                            oninput="verificarInputProtocolo()"
-                           autocomplete="off">
+                           autocomplete="off"
+                           maxlength="20">
                 </div>
             </div>
-
+    
             <div class="modal-actions-custom">
                 <button class="btn-modal-custom btn-cancel-custom" onclick="fecharModal('modalCancelamento')">Voltar</button>
                 <button id="btnConfirmarCancelamento" class="btn-modal-custom btn-confirm-custom" onclick="executarCancelamento()" disabled>Confirmar</button>
