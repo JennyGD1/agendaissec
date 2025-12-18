@@ -641,7 +641,7 @@ app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'rec
         res.status(500).json({ error: 'Erro ao gerar dados do dashboard.' });
     }
 });
-app.get('/api/pericia', verificarAuth, verificarPermissao(['admin', 'recepcao', 'cliente']), async (req, res) => {
+app.get('/api/pericia', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const { data } = req.query;
     const dataFiltro = data || new Date().toISOString().split('T')[0];
 
