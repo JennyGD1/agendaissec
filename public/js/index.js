@@ -96,7 +96,10 @@ function abrirModalCancelamento(id) {
     document.getElementById('inputProtocoloCancelamento').value = '';
     verificarInputProtocolo();
     document.getElementById('modalCancelamento').style.display = 'flex';
-    setTimeout(() => document.getElementById('inputProtocoloCancelamento').focus(), 100);
+    
+    setTimeout(() => {
+        document.getElementById('inputProtocoloCancelamento').focus();
+    }, 50);
 }
 
 function verificarInputProtocolo() {
@@ -454,6 +457,20 @@ async function carregarAgendamentos() {
     } catch (error) {
         console.error(error);
         exibirModal('Erro', 'Erro ao carregar dados.');
+    }
+}
+function configurarModalCancelamento() {
+    const inputProtocolo = document.getElementById('inputProtocoloCancelamento');
+    
+    if (inputProtocolo) {
+        inputProtocolo.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const btn = document.getElementById('btnConfirmarCancelamento');
+                if (!btn.disabled) {
+                    executarCancelamento();
+                }
+            }
+        });
     }
 }
 
