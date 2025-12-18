@@ -685,40 +685,64 @@ select {
 
 /* === AJUSTE PARA MODAL DE CANCELAMENTO MAIS COMPACTO === */
 #modalCancelamento .modal-content-custom {
-    padding: 20px 25px; /* Reduzido padding */
-    max-width: 380px;   /* Reduzida largura */
+    max-width: 350px; /* Reduzido de 400px */
+    padding: 20px; /* Reduzido de 25px */
 }
 
 #modalCancelamento .modal-title-custom {
-    margin-bottom: 10px;
-    font-size: 1.1rem;
+    font-size: 1.2rem; /* Reduzido de 1.25rem */
+    margin-bottom: 12px;
+    padding-right: 20px; /* Espaço para o botão de fechar */
 }
 
 #modalCancelamento .modal-body-custom {
-    margin-bottom: 15px;
+    font-size: 0.95rem; /* Texto ligeiramente menor */
+    line-height: 1.4;
+    margin-bottom: 20px;
 }
 
 #modalCancelamento .modal-body-custom p {
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    margin-bottom: 12px;
 }
 
 #modalCancelamento .modal-body-custom > div {
-    margin-bottom: 0;
+    margin-top: 15px;
 }
 
 #modalCancelamento .modal-body-custom label {
-    font-weight: 600;
-    color: #333;
     display: block;
-    margin-bottom: 5px;
-    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
 }
 
+#modalCancelamento .input-moderno {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+}
+
+#modalCancelamento .modal-actions-custom {
+    margin-top: 5px;
+    gap: 10px; /* Espaço menor entre botões */
+}
+
+#modalCancelamento .btn-modal-custom {
+    padding: 10px 20px; /* Botões um pouco menores */
+    font-size: 0.9rem;
+    min-width: 100px; /* Garante tamanho consistente */
+}
+
+/* Esconde o título se não houver texto */
+#modalCancelamento .modal-title-custom:empty {
+    display: none;
+}
+
+/* Botão de confirmar desabilitado */
 #btnConfirmarCancelamento:disabled {
-    opacity: 0.6;
+    background-color: #cccccc !important;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 #modalObs .modal-body-custom {
