@@ -73,3 +73,6 @@
     transform: translateY(-1px); 
     color: white;
 }
+#btnAddPericia {
+    display: flex !important;
+}
