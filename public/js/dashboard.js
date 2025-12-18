@@ -37,7 +37,6 @@ async function verificarPermissaoDashboard() {
         
         const data = await response.json();
         userRole = data.role;
-        document.getElementById('user-display').textContent = data.email;
 
         if (userRole === 'call_center' || userRole === 'guest') {
             alert('Acesso não autorizado para este perfil.');
