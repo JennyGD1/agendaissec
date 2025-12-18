@@ -53,11 +53,13 @@ async function checarPermissoes() {
 
 function aplicarRestricoesVisuais() {
     const linkAgendar = document.querySelector('nav a[href="agendar.html"]');
+    const linkPericia = document.querySelector('nav a[href="pericia.html"]'); 
     const linkGerenciar = document.getElementById('link-gerenciar');
     const menuFuncoes = document.getElementById('menu-funcoes');
     const btnEncaixe = document.getElementById('btnEncaixe');
 
     if(linkAgendar) linkAgendar.style.display = 'none';
+    if(linkPericia) linkPericia.style.display = 'none'; 
     if(linkGerenciar) linkGerenciar.style.display = 'none';
     if(menuFuncoes) menuFuncoes.style.display = 'none';
     if(btnEncaixe) btnEncaixe.style.display = 'none';
@@ -70,6 +72,7 @@ function aplicarRestricoesVisuais() {
     }
     else if (userRole === 'admin' || userRole === 'recepcao') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
+        if(linkPericia) linkPericia.style.display = 'inline-block'; 
         if(linkGerenciar) linkGerenciar.style.display = 'inline-block';
         if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
         if(btnEncaixe) btnEncaixe.style.display = 'flex';
