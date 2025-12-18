@@ -572,14 +572,22 @@ app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'rec
             FROM cancelamentos 
             WHERE data_cancelamento::date BETWEEN $1 AND $2
         `;
+        const queryPericia = `
+            SELECT status, EXTRACT(DOW FROM data_registro) as dia_semana
+            FROM pericia_documental
+            WHERE data_registro::date BETWEEN $1 AND $2
+        `;
 
-        const [resultAgendamentos, resultCancelamentos] = await Promise.all([
+        const [resultAgendamentos, resultCancelamentos, resultPericia] = await Promise.all([
             pool.query(queryAgendamentos, [inicio, fim]),
-            pool.query(queryCancelamentos, [inicio, fim])
+            pool.query(queryCancelamentos, [inicio, fim]),
+            pool.query(queryPericia, [inicio, fim]) // Executa a nova consulta
         ]);
+        
 
         const agendamentos = resultAgendamentos.rows;
         const cancelamentos = resultCancelamentos.rows;
+        const pericias = resultPericia.rows;
 
         const stats = {
             total: agendamentos.length,
@@ -598,10 +606,20 @@ app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'rec
             colaboradores_agend: {},
             
             colaboradores_cancel: {},
-
+            pericia: {
+                total: pericias.length,
+                autorizado: pericias.filter(p => p.status === 'autorizado').length,
+                indeferido: pericias.filter(p => p.status === 'indeferido').length,
+                parcial: pericias.filter(p => p.status === 'autorizado_parcialmente').length,
+                fluxo_semana: [0, 0, 0, 0, 0, 0, 0]
+            },
             fluxo_semana: [0, 0, 0, 0, 0, 0, 0] 
         };
-
+        pericias.forEach(p => {
+            if (p.dia_semana !== null) {
+                stats.pericia.fluxo_semana[Math.floor(p.dia_semana)]++;
+            }
+        });
         agendamentos.forEach(a => {
             const email = a.colaborador_email || 'Sistema/Desconhecido';
             stats.colaboradores_agend[email] = (stats.colaboradores_agend[email] || 0) + 1;
