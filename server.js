@@ -623,6 +623,54 @@ app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'rec
         res.status(500).json({ error: 'Erro ao gerar dados do dashboard.' });
     }
 });
+app.get('/api/pericia', verificarAuth, verificarPermissao(['admin', 'recepcao', 'cliente']), async (req, res) => {
+    const { data } = req.query;
+    const dataFiltro = data || new Date().toISOString().split('T')[0];
+
+    try {
+        const query = `
+            SELECT 
+                id,
+                nome_beneficiario,
+                numero_cartao,
+                email_beneficiario,
+                status,
+                colaborador_email,
+                to_char(data_registro, 'HH24:MI') as hora,
+                to_char(data_registro, 'DD/MM/YYYY') as data_formatada
+            FROM pericia_documental
+            WHERE data_registro::date = $1
+            ORDER BY data_registro DESC
+        `;
+        const result = await pool.query(query, [dataFiltro]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar registros.' });
+    }
+});
+
+app.post('/api/pericia', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+    const { nome, cartao, email_beneficiario, status } = req.body;
+    const colaborador = req.user.email;
+
+    if (!nome || !status) {
+        return res.status(400).json({ error: 'Nome e Status são obrigatórios.' });
+    }
+
+    try {
+        const query = `
+            INSERT INTO pericia_documental 
+            (nome_beneficiario, numero_cartao, email_beneficiario, status, colaborador_email)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id
+        `;
+        await pool.query(query, [nome, cartao, email_beneficiario, status, colaborador]);
+        
+        res.json({ success: true, message: 'Registro salvo com sucesso!' });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao salvar registro.' });
+    }
+});
 app.get('/', (req, res) => {
     res.redirect('/html/login.html');
 });
