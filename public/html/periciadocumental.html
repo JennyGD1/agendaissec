@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perícia Documental - Maida</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/periciadocumental.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="../img/logo_maida_branca.png" alt="Maida Atendimento">
+        </div>
+        <div class="user-info">
+            <a href="index.html" class="btn-voltar">← Voltar ao Painel</a>
+            <span id="user-display">Carregando...</span>
+            <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="header-pericia">
+            <h1>Registro de Perícia Documental</h1>
+        </div>
+
+        <div class="filtros-container">
+            <div>
+                <label>Data:</label>
+                <input type="date" id="filtroData">
+            </div>
+            
+            <input type="text" id="buscaPericia" placeholder="Filtrar por nome ou cartão...">
+            
+            <button onclick="carregarPericias()">Atualizar</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Horário</th>
+                    <th>Nome</th>
+                    <th>Nº Cartão</th>
+                    <th>Email Beneficiário</th>
+                    <th>Status</th>
+                    <th>Registrado Por</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-corpo"></tbody>
+        </table>
+    </main>
+
+    <button id="btnAddPericia" class="fab-encaixe" onclick="abrirModalRegistro()" title="Novo Registro">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+
+    <div id="modalRegistro" class="modal-overlay-custom">
+        <div class="modal-content-custom">
+            <button class="modal-close-icon" onclick="fecharModal('modalRegistro')">×</button>
+            <div class="modal-title-custom">Nova Perícia Documental</div>
+            
+            <div>
+                <div class="input-wrapper-relativo">
+                    <label>Nome do Beneficiário:</label>
+                    <div class="busca-container">
+                        <input type="text" id="regNome" placeholder="Digite nome ou CPF..." autocomplete="off" class="input-moderno">
+                        <button onclick="buscarBeneficiarioApi(true)" title="Buscar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                    <ul id="listaSugestoes" class="sugestoes-lista"></ul>
+                </div>
+
+                <div>
+                    <label>Carteirinha:</label>
+                    <input type="text" id="regCartao" readonly class="input-moderno input-readonly">
+                </div>
+
+                <div>
+                    <label>Email do Beneficiário:</label>
+                    <input type="email" id="regEmail" class="input-moderno" placeholder="email@exemplo.com">
+                </div>
+
+                <div>
+                    <label>Status da Análise:</label>
+                    <select id="regStatus" class="input-moderno">
+                        <option value="">Selecione...</option>
+                        <option value="autorizado">Autorizado</option>
+                        <option value="indeferido">Indeferido</option>
+                        <option value="autorizado_parcialmente">Autorizado Parcialmente</option>
+                    </select>
+                </div>
+
+                <button id="btnSalvarRegistro" onclick="salvarRegistro()">Salvar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalSistema" class="modal-overlay-custom">
+        <div class="modal-content-custom">
+            <div id="modalTitulo" class="modal-title-custom">Atenção</div>
+            <div id="modalMensagem" class="modal-body-custom"></div>
+            <div id="modalBotoes" class="modal-actions-custom"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="../js/periciadocumental.js"></script>
+</body>
+</html>
