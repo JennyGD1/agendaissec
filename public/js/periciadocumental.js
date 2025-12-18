@@ -26,7 +26,6 @@ async function checarPermissoes() {
         if (!response.ok) throw new Error('Falha auth');
         const data = await response.json();
         userRole = data.role;
-        document.getElementById('user-display').textContent = data.email;
         
         carregarPericias();
     } catch (error) {
