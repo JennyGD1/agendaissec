@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../css/dashboard.css">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 </head>
 <body>
@@ -45,6 +44,8 @@
             </div>
         </div>
         
+        <h2 style="margin: 20px 0; color: #555;">Agendamentos</h2>
+
         <div class="dashboard-grid">
             <div class="dash-card">
                 <h3>Total Agendamentos</h3>
@@ -91,6 +92,38 @@
                 <canvas id="chartColabCancel"></canvas>
             </div>
 
+        </div>
+
+        <h2 style="margin: 40px 0 20px 0; color: #555; border-top: 1px solid #ddd; padding-top: 20px;">Perícia Documental</h2>
+
+        <div class="dashboard-grid">
+            <div class="dash-card">
+                <h3>Total Analisado</h3>
+                <p class="big-number" id="kpi-pericia-total">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Autorizados</h3>
+                <p class="big-number" id="kpi-pericia-autorizado" style="color: #28a745;">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Indeferidos</h3>
+                <p class="big-number" id="kpi-pericia-indeferido" style="color: #dc3545;">0</p>
+            </div>
+            <div class="dash-card">
+                <h3>Parcial</h3>
+                <p class="big-number" id="kpi-pericia-parcial" style="color: #ffc107;">0</p>
+            </div>
+        </div>
+
+        <div class="charts-wrapper">
+            <div class="chart-container half-width">
+                <h3>Status da Perícia</h3>
+                <canvas id="chartPericiaStatus"></canvas>
+            </div>
+            <div class="chart-container half-width">
+                <h3>Fluxo de Perícia (Semanal)</h3>
+                <canvas id="chartPericiaSemana"></canvas>
+            </div>
         </div>
     </main>
 
