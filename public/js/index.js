@@ -53,7 +53,7 @@ async function checarPermissoes() {
 
 function aplicarRestricoesVisuais() {
     const linkAgendar = document.querySelector('nav a[href="agendar.html"]');
-    const linkPericia = document.querySelector('nav a[href="pericia.html"]'); 
+    const linkPericia = document.querySelector('nav a[href="periciadocumental.html"]'); 
     const linkGerenciar = document.getElementById('link-gerenciar');
     const menuFuncoes = document.getElementById('menu-funcoes');
     const btnEncaixe = document.getElementById('btnEncaixe');
@@ -72,7 +72,7 @@ function aplicarRestricoesVisuais() {
     }
     else if (userRole === 'admin' || userRole === 'recepcao') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
-        if(linkPericia) linkPericia.style.display = 'inline-block'; 
+        if(linkPericia) linkPericia.style.display = 'block'; 
         if(linkGerenciar) linkGerenciar.style.display = 'inline-block';
         if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
         if(btnEncaixe) btnEncaixe.style.display = 'flex';
