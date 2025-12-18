@@ -1,55 +1,69 @@
-/* Herda estilos do index.css se estiverem carregados ou copie as classes base */
-
-/* Ajuste específico para o Header */
-.header-pericia {
-    margin-bottom: 20px;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-.header-pericia h1 {
-    font-size: 1.5rem;
+html {
+    scrollbar-gutter: stable;
+}
+
+body {
+    background-color: #f5f7fb;
     color: #333;
+    min-height: 100vh;
 }
 
-/* Badge de Status na Tabela */
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    text-transform: capitalize;
-}
-
-.status-badge.autorizado {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-}
-
-.status-badge.indeferido {
-    background-color: #ffebee;
-    color: #c62828;
-}
-
-.status-badge.autorizado_parcialmente {
-    background-color: #fff3e0;
-    color: #ef6c00;
-}
-
-/* Botão salvar do modal */
-#btnSalvarRegistro {
-    width: 100%;
+nav {
     background-color: #0066cc;
     color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background 0.2s;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-#btnSalvarRegistro:hover {
-    background-color: #0056b3;
+nav .logo {
+    font-size: 1.4rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav .logo img {
+    height: 40px;
+    width: auto;
+}
+
+nav .user-info {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.btn-logout {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    padding: 5px;
+}
+
+.btn-logout:hover {
+    opacity: 1;
+}
+
+.btn-logout svg {
+    stroke: white;
+    width: 20px;
+    height: 20px;
 }
 
 .btn-voltar { 
@@ -73,6 +87,364 @@
     transform: translateY(-1px); 
     color: white;
 }
-#btnAddPericia {
-    display: flex !important;
+
+main {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.header-pericia {
+    margin-bottom: 20px;
+}
+
+.header-pericia h1 {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.filtros-container {
+    background: #ffffff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 1px solid #eef0f5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.filtros-container > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filtros-container label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    margin-left: 2px;
+}
+
+.filtros-container input {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filtros-container input:focus {
+    border-color: #0066cc;
+}
+
+#buscaPericia {
+    flex-grow: 1;
+}
+
+.filtros-container button {
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 42px;
+}
+
+.filtros-container button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eef0f5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+thead {
+    background-color: #f8f9fa;
+}
+
+thead th {
+    text-align: left;
+    padding: 15px 20px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6c757d;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #eef0f5;
+}
+
+tbody td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f2f4f8;
+    color: #333;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background-color: #fcfcfc;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-badge.autorizado {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.indeferido {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.autorizado_parcialmente {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.fab-encaixe {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background-color: #28a745;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.fab-encaixe:hover {
+    transform: scale(1.1);
+    background-color: #218838;
+}
+
+.fab-encaixe svg {
+    width: 30px;
+    height: 30px;
+}
+
+/* Modais */
+.modal-overlay-custom {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content-custom {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: fadeInModal 0.2s ease-out;
+    position: relative;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-title-custom {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.modal-body-custom {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.modal-actions-custom {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-modal-custom {
+    padding: 10px 25px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+
+.btn-confirm-custom {
+    background-color: #0066cc;
+    color: white;
+}
+
+.btn-confirm-custom:hover {
+    background-color: #0056b3;
+}
+
+.modal-close-icon {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+}
+
+.modal-close-icon:hover {
+    color: #333;
+}
+
+/* Inputs e Formulario do Modal */
+.input-wrapper-relativo {
+    position: relative;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.input-wrapper-relativo label, 
+#modalRegistro label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+#modalRegistro > div > div {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.input-moderno {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+.input-moderno:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.input-readonly {
+    background-color: #e9ecef;
+    font-weight: bold;
+    color: #555;
+}
+
+.busca-container {
+    display: flex;
+    gap: 5px;
+}
+
+.busca-container button {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sugestoes-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ddd;
+    display: none;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    background: white;
+    width: 100%;
+    z-index: 1000;
+    top: 100%;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.sugestoes-lista li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.sugestoes-lista li:hover {
+    background: #f0f0f0;
+}
+
+#btnSalvarRegistro {
+    width: 100%;
+    background-color: #0066cc;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.2s;
+}
+
+#btnSalvarRegistro:hover {
+    background-color: #0056b3;
+}
+
+select.input-moderno {
+    background-color: white;
 }
