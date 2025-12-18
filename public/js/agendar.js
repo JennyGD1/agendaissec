@@ -233,6 +233,7 @@ async function salvarAgendamento() {
     const cartao = document.getElementById('numCartao').value;
     const emailInput = document.getElementById('email').value;
     const contatoInput = document.getElementById('contato').value;
+    const regiaoInput = document.getElementById('regiao').value;
     const user = firebase.auth().currentUser;
 
     if (!user) return mostrarAlerta("Sessão Perdida", "Sua sessão expirou. Faça login novamente.");
