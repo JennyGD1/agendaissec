@@ -683,12 +683,29 @@ select {
     margin-top: 15px;
 }
 
-#modalCancelamento .modal-body-custom p {
+/* === AJUSTE PARA MODAL DE CANCELAMENTO MAIS COMPACTO === */
+#modalCancelamento .modal-content-custom {
+    padding: 20px 25px; /* Reduzido padding */
+    max-width: 380px;   /* Reduzida largura */
+}
+
+#modalCancelamento .modal-title-custom {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+#modalCancelamento .modal-body-custom {
     margin-bottom: 15px;
 }
 
-#modalCancelamento .modal-body-custom > div {
+#modalCancelamento .modal-body-custom p {
     margin-bottom: 10px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+#modalCancelamento .modal-body-custom > div {
+    margin-bottom: 0;
 }
 
 #modalCancelamento .modal-body-custom label {
@@ -696,6 +713,7 @@ select {
     color: #333;
     display: block;
     margin-bottom: 5px;
+    font-size: 0.85rem;
 }
 
 #btnConfirmarCancelamento:disabled {
