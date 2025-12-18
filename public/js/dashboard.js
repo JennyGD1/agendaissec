@@ -1,6 +1,7 @@
 const token = localStorage.getItem('maida_token');
 let userRole = 'guest';
 let chartStatus, chartTipo, chartSemana, chartColabAgend, chartColabCancel;
+let chartPericiaStatus, chartPericiaSemana;
 
 async function iniciarFirebase() {
     try {
@@ -87,11 +88,21 @@ async function carregarDadosDashboard() {
     }
 }
 
+// --- FUNÇÃO CORRIGIDA ABAIXO ---
 function atualizarKPIs(data) {
+    // Agendamentos
     document.getElementById('kpi-total').innerText = data.total;
     document.getElementById('kpi-atendidos').innerText = data.status.atendido;
     document.getElementById('kpi-absenteismo').innerText = data.status.nao_compareceu;
     document.getElementById('kpi-encaixes').innerText = data.tipo.encaixe;
+
+    // Perícia (O bloco IF deve ficar AQUI DENTRO)
+    if (data.pericia) {
+        document.getElementById('kpi-pericia-total').innerText = data.pericia.total;
+        document.getElementById('kpi-pericia-autorizado').innerText = data.pericia.autorizado;
+        document.getElementById('kpi-pericia-indeferido').innerText = data.pericia.indeferido;
+        document.getElementById('kpi-pericia-parcial').innerText = data.pericia.parcial;
+    }
 }
 
 function renderizarGraficos(data) {
@@ -109,6 +120,8 @@ function renderizarGraficos(data) {
     if(chartSemana) chartSemana.destroy();
     if(chartColabAgend) chartColabAgend.destroy();
     if(chartColabCancel) chartColabCancel.destroy();
+    if(chartPericiaStatus) chartPericiaStatus.destroy();
+    if(chartPericiaSemana) chartPericiaSemana.destroy();
 
     Chart.register(ChartDataLabels);
 
@@ -146,7 +159,7 @@ function renderizarGraficos(data) {
         },
         layout: {
              padding: {
-                 right: 50, // Espaço lateral para números em barras horizontais
+                 right: 50,
                  top: 20 
              }
         }
@@ -201,7 +214,6 @@ function renderizarGraficos(data) {
         }
     });
 
-    // --- CORREÇÃO AQUI ---
     const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const semanaOptions = JSON.parse(JSON.stringify(commonBarOptions));
     semanaOptions.scales.y.ticks = { display: false };
@@ -209,7 +221,6 @@ function renderizarGraficos(data) {
     semanaOptions.plugins.datalabels.align = 'top';
     semanaOptions.plugins.datalabels.anchor = 'end';
     
-    // Aumentamos o padding superior para 50px para caber o número sem cortar
     semanaOptions.layout.padding.top = 50; 
 
     const ctxSemana = document.getElementById('chartSemana').getContext('2d');
@@ -269,5 +280,47 @@ function renderizarGraficos(data) {
             }]
         },
         options: horizontalOptions
+    });
+
+    // --- GRÁFICOS DE PERÍCIA ---
+
+    const ctxPericiaStatus = document.getElementById('chartPericiaStatus').getContext('2d');
+    chartPericiaStatus = new Chart(ctxPericiaStatus, {
+        type: 'doughnut',
+        data: {
+            labels: ['Autorizado', 'Indeferido', 'Parcial'],
+            datasets: [{
+                data: [data.pericia.autorizado, data.pericia.indeferido, data.pericia.parcial],
+                backgroundColor: [colors.green, colors.pinkNeon, colors.yellow],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: { 
+                    color: '#fff', 
+                    font: { weight: 'bold', size: 11 },
+                    formatter: percentageFormatter
+                }
+            },
+            cutout: '60%'
+        }
+    });
+
+    const ctxPericiaSemana = document.getElementById('chartPericiaSemana').getContext('2d');
+    chartPericiaSemana = new Chart(ctxPericiaSemana, {
+        type: 'bar',
+        data: {
+            labels: diasSemana, // Reutilizando array de dias
+            datasets: [{
+                data: data.pericia.fluxo_semana,
+                backgroundColor: colors.bluePrimary,
+                borderRadius: 6,
+                barPercentage: 0.6
+            }]
+        },
+        options: semanaOptions // Reutilizando opções verticais
     });
 }
