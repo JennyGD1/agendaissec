@@ -175,14 +175,17 @@ async function baixarPDF() {
     
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
+    drawHeader(doc, true);
+
     const inicio = document.getElementById('dataInicio').value;
     const fim = document.getElementById('dataFim').value;
     const periodoTexto = `Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`;
     const agora = new Date().toLocaleString('pt-BR');
 
     // --- CABEÇALHO ---
-    function drawHeader(doc) {
+    function drawHeader(doc, isFirstPage = false) {
+        const agora = new Date().toLocaleString('pt-BR');
         doc.setTextColor(200); 
         doc.setFontSize(8);
         doc.text(`Gerado em: ${agora}`, 200, 8, { align: 'right' });
@@ -198,15 +201,19 @@ async function baixarPDF() {
             doc.addImage(imgElement, 'PNG', 14, 10, logoWidth, logoHeight); 
         } catch (e) {}
 
-        doc.setFontSize(16); 
-        doc.setTextColor(0, 0, 0); 
-        doc.setFont(undefined, 'bold');
-        doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 40, { align: 'center' });
-        doc.setFont(undefined, 'normal');
-        
-        doc.setFontSize(10); 
-        doc.setTextColor(100);
-        doc.text(periodoTexto, 105, 46, { align: 'center' });
+        if (isFirstPage) {
+            doc.setFontSize(16); 
+            doc.setTextColor(0, 0, 0); 
+            doc.setFont(undefined, 'bold');
+            doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 40, { align: 'center' });
+            
+            doc.setFontSize(10); 
+            doc.setTextColor(100);
+            doc.setFont(undefined, 'normal');
+            const inicio = document.getElementById('dataInicio').value;
+            const fim = document.getElementById('dataFim').value;
+            doc.text(`Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`, 105, 46, { align: 'center' });
+        }
     }
 
     drawHeader(doc);
@@ -327,10 +334,10 @@ async function baixarPDF() {
     const agendamentosPorDia = agruparPorData(dadosRelatorio.lista_detalhada);
 
     for (const [data, lista] of Object.entries(agendamentosPorDia)) {
-        if (finalY > 260) { 
+        if (finalY > 250) { 
             doc.addPage(); 
-            finalY = 20; 
-            drawHeader(doc);
+            drawHeader(doc, false);
+            finalY = 35; 
         }
         
         doc.setFillColor(233, 236, 239);
@@ -352,7 +359,7 @@ async function baixarPDF() {
             theme: 'grid',
             headStyles: { fillColor: [248, 249, 250], textColor: [50, 50, 50], fontStyle: 'bold' },
             styles: { fontSize: 8, cellPadding: 2 },
-            margin: { top: 55 }, 
+            margin: { top: 60, left: 14, right: 14 }, 
             columnStyles: { 0: { cellWidth: 15 }, 4: { fontStyle: 'bold' } },
             didParseCell: function(data) {
                 if (data.section === 'body' && data.column.index === 4) {
