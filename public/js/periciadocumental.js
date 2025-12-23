@@ -129,8 +129,10 @@ const inputNome = document.getElementById('regNome');
 const listaSugestoes = document.getElementById('listaSugestoes');
 
 async function buscarBeneficiarioApi(forcar = false) {
-    const nome = inputNome.value;
-    if (!forcar && nome.length < 3) {
+    let termoOriginal = inputNome.value;
+    let termoParaEnvio = /\d/.test(termoOriginal) ? termoOriginal.replace(/\D/g, "") : termoOriginal;
+
+    if (!forcar && termoParaEnvio.length < 3) {
         listaSugestoes.style.display = 'none';
         return;
     }
@@ -139,7 +141,7 @@ async function buscarBeneficiarioApi(forcar = false) {
     listaSugestoes.innerHTML = '<li>Buscando...</li>';
 
     try {
-        const res = await fetch(`/api/buscar-beneficiario?nome=${encodeURIComponent(nome)}`, {
+        const res = await fetch(`/api/buscar-beneficiario?nome=${encodeURIComponent(termoParaEnvio)}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -166,8 +168,21 @@ async function buscarBeneficiarioApi(forcar = false) {
 }
 
 inputNome.addEventListener('input', function() {
+    let v = this.value;
+
+    if (/^\d/.test(v)) {
+        v = v.replace(/\D/g, ""); 
+        if (v.length > 11) v = v.slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        this.value = v;
+    }
+
     clearTimeout(timeoutBusca);
-    if (this.value.length < 3) {
+    const termoLimpo = /\d/.test(this.value) ? this.value.replace(/\D/g, "") : this.value;
+    
+    if (termoLimpo.length < 3) {
         listaSugestoes.style.display = 'none';
         return;
     }

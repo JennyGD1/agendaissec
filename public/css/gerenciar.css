@@ -419,7 +419,7 @@ input[type="date"]:focus, input[type="time"]:focus {
     display: flex; 
     align-items: center; 
     font-size: 0.9rem; 
-    color: white; /* Garante contraste na nav azul */
+    color: white; 
 }
 
 .btn-logout { 
@@ -443,19 +443,19 @@ input[type="date"]:focus, input[type="time"]:focus {
 }
 .grade-header-container {
     display: flex;
-    justify-content: space-between; /* Joga um para cada lado */
+    justify-content: space-between; 
     align-items: center;
     margin-bottom: 8px;
     width: 100%;
 }
 
 .grade-header-container label {
-    margin-bottom: 0; /* Remove margem inferior padrão do label */
+    margin-bottom: 0;
 }
 
 #texto-marcar {
-    color: #0066cc;      /* Azul */
-    font-weight: bold;   /* Negrito */
+    color: #0066cc;      
+    font-weight: bold;  
     cursor: pointer;
     font-size: 0.9rem;
     user-select: none;
@@ -465,4 +465,33 @@ input[type="date"]:focus, input[type="time"]:focus {
 #texto-marcar:hover {
     color: #004499;
     text-decoration: underline;
+}
+.btn-delete-day {
+    background: none;
+    border: 1px solid #0066cc;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    height: 46px; 
+    width: 46px;
+}
+
+.btn-delete-day:hover {
+    background-color: #f0f7ff;
+    border-color: #dc3545; 
+}
+
+.btn-delete-day svg {
+    width: 20px;
+    height: 20px;
+    stroke: #0066cc;
+    transition: stroke 0.2s;
+}
+
+.btn-delete-day:hover svg {
+    stroke: #dc3545; 
 }

@@ -255,6 +255,36 @@ function logout() {
 function fecharModal() {
     document.getElementById('modalSistema').style.display = 'none';
 }
+async function excluirTodosDoDia() {
+    const dataIso = document.getElementById('dataVisualizar').value;
+    if (!dataIso) return;
+
+    const dataBR = dataIso.split('-').reverse().join('/');
+
+    exibirModal("Confirmar Exclusão em Massa", 
+        `Deseja realmente apagar TODOS os horários do dia ${dataBR}? Esta ação só será permitida se não houver agendamentos.`, 
+        async () => {
+            const token = localStorage.getItem('maida_token');
+            try {
+                const response = await fetch(`/api/admin/slots/date/${dataIso}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    exibirModal("Sucesso", res.message);
+                    carregarHorariosDoBanco(dataIso);
+                } else {
+                    const err = await response.json();
+                    exibirModal("Erro", err.error || "Erro ao excluir horários.");
+                }
+            } catch (e) {
+                exibirModal("Erro", "Erro de conexão com o servidor.");
+            }
+        }
+    );
+}
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal-overlay-custom')) fecharModal();

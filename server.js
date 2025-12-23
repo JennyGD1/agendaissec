@@ -700,5 +700,33 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+app.delete('/api/admin/slots/date/:data', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
+    const { data } = req.params;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const check = await client.query(`
+            SELECT a.id FROM appointments a
+            JOIN slots s ON a.slot_id = s.id
+            WHERE s.data_hora::date = $1
+        `, [data]);
 
+        if (check.rowCount > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Não é possível excluir: Existem agendamentos nesta data.' });
+        }
+
+        const result = await client.query('DELETE FROM slots WHERE data_hora::date = $1', [data]);
+        
+        await client.query('COMMIT');
+        res.json({ success: true, message: `${result.rowCount} horários excluídos com sucesso.` });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao excluir horários do dia.' });
+    } finally {
+        client.release();
+    }
+});
 module.exports = app;

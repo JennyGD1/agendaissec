@@ -158,10 +158,12 @@ nav .user-info {
 }
 
 .btn-horario.selecionado { 
-    background-color: #0066cc; 
-    color: white; 
-    border-color: #0056b3; 
-    font-weight: bold; 
+    background-color: #0066cc;
+    color: white;
+    border-color: #0066cc;
+    box-shadow: 0 4px 8px rgba(0, 102, 204, 0.3);
+    font-weight: bold;
+    transform: translateY(-2px);
 }
 
 .btn-salvar { 
@@ -180,6 +182,8 @@ nav .user-info {
 
 .btn-salvar:hover { 
     background-color: #0056b3; 
+    transform: translateY(-1px); 
+    box-shadow: 0 4px 10px rgba(0,102,204,0.3); 
 }
 
 .form-group-busca { 
