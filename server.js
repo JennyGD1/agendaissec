@@ -50,11 +50,13 @@ const verificarAuth = async (req, res, next) => {
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const userEmail = decodedToken.email;
 
-        const isMaida = userEmail.endsWith('@maida.health');
+        const isAdmin = ADMIN_EMAILS.includes(userEmail);
+        const isRecepcao = RECEPCAO_EMAILS.includes(userEmail);
         const isClient = CLIENT_EMAILS.includes(userEmail);
+        const isMaida = userEmail.endsWith('@maida.health');
 
-        if (!isMaida && !isClient) {
-             return res.status(403).json({ error: 'Domínio/Usuário não autorizado.' });
+        if (!isMaida && !isClient && !isAdmin && !isRecepcao) {
+            return res.status(403).json({ error: 'Domínio/Usuário não autorizado.' });
         }
 
         let role = 'guest';
