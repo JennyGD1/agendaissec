@@ -341,7 +341,7 @@ app.get('/api/agendamentos', verificarAuth, verificarPermissao(['admin', 'recepc
 app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']), async (req, res) => {
     const client = await pool.connect();
     const colaborador = req.user.email;
-    const { nome, cartao, hora, contato, regiao, obs, force } = req.body;
+    const { nome, cartao, hora, contato, email_contato, regiao, obs, force } = req.body;
 
     const hoje = new Date().toISOString().split('T')[0];
     const dataHoraCompleta = `${hoje} ${hora}:00`;
@@ -350,7 +350,34 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
         await client.query('BEGIN');
 
         if (!force) {
-            const checkQuery = `
+            const checkFuturoQuery = `
+                SELECT 
+                    to_char(s.data_hora, 'DD/MM/YYYY') as data_existente,
+                    to_char(s.data_hora, 'HH24:MI') as hora_existente
+                FROM appointments a
+                JOIN slots s ON a.slot_id = s.id
+                WHERE s.data_hora::date > $1
+                AND (
+                    (a.numero_cartao = $2 AND a.numero_cartao <> '') 
+                    OR 
+                    LOWER(a.nome_beneficiario) = LOWER($3)
+                )
+                AND a.status IN ('Agendado', 'Aguardando')
+            `;
+            
+            const resFuturo = await client.query(checkFuturoQuery, [hoje, cartao || '', nome]);
+
+            if (resFuturo.rowCount > 0) {
+                await client.query('ROLLBACK');
+                return res.status(409).json({ 
+                    error: 'Agendamento futuro detectado', 
+                    type: 'FUTURE_ENTRY',
+                    data: resFuturo.rows[0].data_existente,
+                    hora: resFuturo.rows[0].hora_existente 
+                });
+            }
+
+            const checkHojeQuery = `
                 SELECT to_char(s.data_hora, 'HH24:MI') as hora_existente
                 FROM appointments a
                 JOIN slots s ON a.slot_id = s.id
@@ -363,7 +390,7 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
                 AND a.status NOT IN ('Não Compareceu')
             `;
             
-            const checkResult = await client.query(checkQuery, [hoje, cartao || '', nome]);
+            const checkResult = await client.query(checkHojeQuery, [hoje, cartao || '', nome]);
 
             if (checkResult.rowCount > 0) {
                 await client.query('ROLLBACK');
@@ -375,6 +402,7 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
             }
         }
 
+        // Se passar pelas verificações, cria o slot e o agendamento
         let slotResult = await client.query(
             `INSERT INTO slots (data_hora, disponivel) 
              VALUES ($1, FALSE) 
@@ -388,11 +416,11 @@ app.post('/api/encaixe', verificarAuth, verificarPermissao(['admin', 'recepcao']
         const insertQuery = `
             INSERT INTO appointments 
             (slot_id, nome_beneficiario, numero_cartao, contato, email_contato, regiao, observacao, colaborador_email, status, is_encaixe)
-            VALUES ($1, $2, $3, $4, 'encaixe@recepcao', $5, $6, $7, 'Agendado', TRUE) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Agendado', TRUE) 
             RETURNING id
         `;
         
-        await client.query(insertQuery, [slotId, nome, cartao, contato, regiao, obs, colaborador]);
+        await client.query(insertQuery, [slotId, nome, cartao, contato, email_contato || '', regiao, obs, colaborador]);
         
         await client.query('COMMIT');
         res.json({ success: true, message: 'Encaixe realizado com sucesso!' });

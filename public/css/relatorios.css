@@ -11,6 +11,7 @@ body {
     min-height: 100vh; 
 }
 
+/* NAVBAR IGUAL ÀS OUTRAS PÁGINAS */
 nav { 
     background-color: #0066cc; 
     color: white; 
@@ -24,14 +25,72 @@ nav {
 nav .logo { 
     font-size: 1.4rem; 
     font-weight: bold; 
+    display: flex; /* Adicionado */
+    align-items: center; /* Adicionado */
+    gap: 10px; /* Adicionado - igual às outras */
 }
 
-nav a { 
-    color: white; 
-    text-decoration: none; 
+nav .logo img { 
+    height: 40px; /* Adicionado - padrão das outras páginas */
+    width: auto; 
+}
+
+/* Separador da logo */
+.separador-logo {
+    margin: 0 5px; /* Ajuste fino do espaçamento */
+}
+
+/* ADICIONE ESTAS REGRAS PARA FICAR IGUAL ÀS OUTRAS PÁGINAS */
+nav .user-info { 
+    display: flex; 
+    align-items: center; 
     font-size: 0.9rem; 
 }
 
+.btn-logout { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    margin-left: 20px; 
+    display: flex; 
+    align-items: center; 
+    opacity: 0.8; 
+    transition: opacity 0.2s; 
+    padding: 5px; 
+}
+
+.btn-logout:hover { 
+    opacity: 1; 
+}
+
+.btn-logout svg { 
+    stroke: white; 
+    width: 20px; 
+    height: 20px; 
+}
+
+/* Botão de voltar mais parecido com outras páginas */
+.btn-voltar { 
+    background-color: #4da6ff; /* Cor igual às outras páginas */
+    text-decoration: none; 
+    display: flex; 
+    align-items: center; 
+    padding: 8px 16px; /* Ajustado */
+    border-radius: 6px; /* Igual às outras */
+    color: white; 
+    font-size: 0.9rem; 
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-voltar:hover { 
+    background-color: #80bfff; 
+    text-decoration: none; 
+    transform: translateY(-1px); 
+}
+
+/* Restante do CSS mantido igual */
 .toolbar {
     background-color: #333; 
     padding: 15px; 
@@ -75,17 +134,6 @@ nav a {
 
 .btn-pdf:hover { 
     background-color: #b02a37; 
-}
-
-.btn-voltar { 
-    background-color: #6c757d; 
-    text-decoration: none; 
-    display: flex; 
-    align-items: center; 
-    padding: 8px 15px; 
-    border-radius: 4px; 
-    color: white; 
-    font-size: 0.9rem; 
 }
 
 /* Folha A4 na tela */

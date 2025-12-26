@@ -204,7 +204,7 @@ async function salvarEncaixe(force = false) {
     const hora = document.getElementById('encaixeHora').value;
     const nome = document.getElementById('encaixeNome').value;
     const cartao = document.getElementById('encaixeCartao').value;
-    
+    const emailContato = document.getElementById('encaixeEmail').value.trim();
     const contatoEl = document.getElementById('encaixeContato');
     const contato = contatoEl ? contatoEl.value.trim() : '';
     
@@ -233,6 +233,7 @@ async function salvarEncaixe(force = false) {
     const payload = {
         hora, nome, cartao,
         contato: contato,
+        email_contato: emailContato,
         regiao: document.getElementById('encaixeRegiao').value,
         obs: document.getElementById('encaixeObs').value,
         force: force
@@ -255,6 +256,7 @@ async function salvarEncaixe(force = false) {
             document.getElementById('encaixeNome').value = '';
             document.getElementById('encaixeCartao').value = '';
             document.getElementById('encaixeContato').value = '';
+            document.getElementById('encaixeEmail').value = '';
             document.getElementById('encaixeObs').value = '';
             
             if (btn) {
@@ -264,6 +266,18 @@ async function salvarEncaixe(force = false) {
         } else {
             const erro = await response.json();
             
+            if (response.status === 409 && erro.type === 'FUTURE_ENTRY') {
+                exibirModal(
+                    'Agendamento Futuro Identificado', 
+                    `Beneficiário já agendado para o dia ${erro.data} às ${erro.hora}. Por gentileza, cancele o agendamento futuro para realizar o encaixe.`
+                );
+                if (btn) {
+                    btn.innerText = textoOriginal;
+                    btn.disabled = false;
+                }
+                return;
+            }
+
             if (response.status === 409 && erro.type === 'DUPLICATE_ENTRY') {
                 document.getElementById('horaDuplicidadeTxt').innerText = erro.hora;
                 document.getElementById('modalDuplicidade').style.display = 'flex';

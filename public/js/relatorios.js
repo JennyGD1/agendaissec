@@ -205,14 +205,14 @@ async function baixarPDF() {
             doc.setFontSize(16); 
             doc.setTextColor(0, 0, 0); 
             doc.setFont(undefined, 'bold');
-            doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 40, { align: 'center' });
+            doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 20, { align: 'center' });
             
             doc.setFontSize(10); 
             doc.setTextColor(100);
             doc.setFont(undefined, 'normal');
             const inicio = document.getElementById('dataInicio').value;
             const fim = document.getElementById('dataFim').value;
-            doc.text(`Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`, 105, 46, { align: 'center' });
+            doc.text(`Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`, 105, 26, { align: 'center' });
         }
     }
 
@@ -227,7 +227,7 @@ async function baixarPDF() {
     const pInterior = totalGeral > 0 ? ((dadosRelatorio.regiao.interior / totalGeral) * 100).toFixed(1) : 0;
     const pMetropolitana = totalGeral > 0 ? ((dadosRelatorio.regiao.metropolitana / totalGeral) * 100).toFixed(1) : 0;
 
-    const cardY = 55;
+    const cardY = 32;
     const cardHeight = 100; 
     const cardWidth = 88;
     const card1X = 14;
@@ -330,7 +330,7 @@ async function baixarPDF() {
     doc.text(`${dadosRelatorio.total}`, card2X + cardWidth - 5, legendY + 22, {align:'right'});
 
     // --- TABELAS ---
-    let finalY = cardY + cardHeight + 15; 
+    let finalY = cardY + cardHeight + 10;
     const agendamentosPorDia = agruparPorData(dadosRelatorio.lista_detalhada);
 
     for (const [data, lista] of Object.entries(agendamentosPorDia)) {
