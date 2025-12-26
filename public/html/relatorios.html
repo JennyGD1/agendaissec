@@ -7,8 +7,8 @@
         default-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; 
         script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
         img-src 'self' data: http://*.googleusercontent.com https://*.googleusercontent.com https://googleusercontent.com http://googleusercontent.com https://lh3.googleusercontent.com; 
-        connect-src 'self' http://localhost:3000 https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com;
-    "> 
+        connect-src 'self' http://localhost:3000 https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+    ">
     <title>Relatórios - Maida Health</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -56,10 +56,10 @@
     </div>
 
     <div class="page-container" id="relatorioVisual">
-        <img src="./img/logo_maida.png" id="logoImgHidden" style="display:none;" alt="Logo Maida">
+        <img src="../img/logo_maida.png" id="logoImgHidden" style="display:none;" alt="Logo Maida">
         
         <div class="header-timbrado">
-            <img src="./img/logo_maida.png" alt="Maida Health" onerror="this.style.display='none'">
+            <img src="../img/logo_maida.png" alt="Maida Health" onerror="this.style.display='none'">
             <div class="header-info">
                 Relatório Gerencial<br>
                 Portal de Agendamentos - ISSEC

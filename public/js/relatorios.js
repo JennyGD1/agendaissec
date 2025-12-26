@@ -207,50 +207,50 @@ async function baixarPDF() {
     
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
-    drawHeader(doc, true);
-
+    const agora = new Date().toLocaleString('pt-BR');
     const inicio = document.getElementById('dataInicio').value;
     const fim = document.getElementById('dataFim').value;
-    const periodoTexto = `Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`;
-    const agora = new Date().toLocaleString('pt-BR');
 
-    // --- CABEÇALHO ---
     function drawHeader(doc, isFirstPage = false) {
-        const agora = new Date().toLocaleString('pt-BR');
-        doc.setTextColor(200); 
+        doc.setTextColor(180); 
         doc.setFontSize(8);
-        doc.text(`Gerado em: ${agora}`, 200, 8, { align: 'right' });
+        doc.text(`Gerado em: ${agora}`, 195, 8, { align: 'right' });
 
         const imgElement = document.getElementById('logoImgHidden');
-        try {
-            const logoWidth = 30; 
-            let logoHeight = 20; 
-            if (imgElement.naturalWidth > 0) {
+        if (imgElement && imgElement.naturalWidth > 0) {
+            try {
                 const ratio = imgElement.naturalHeight / imgElement.naturalWidth;
-                logoHeight = logoWidth * ratio;
-            }
-            doc.addImage(imgElement, 'PNG', 14, 10, logoWidth, logoHeight); 
-        } catch (e) {}
+                const logoW = 25;
+                const logoH = logoW * ratio;
+                doc.addImage(imgElement, 'PNG', 15, 10, logoW, logoH);
+            } catch (e) { console.error("Erro logo PDF", e); }
+        }
+
+        doc.setTextColor(100);
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text("Relatório Gerencial", 195, 18, { align: 'right' });
+        doc.text("Portal de Agendamentos - ISSEC", 195, 23, { align: 'right' });
+
+        doc.setDrawColor(0, 102, 204);
+        doc.setLineWidth(0.7);
+        doc.line(15, 33, 195, 33);
 
         if (isFirstPage) {
             doc.setFontSize(16); 
-            doc.setTextColor(0, 0, 0); 
+            doc.setTextColor(30, 30, 30); 
             doc.setFont(undefined, 'bold');
-            doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 20, { align: 'center' });
+            doc.text("Relatório de Perícia Médica Dermatológica - ISSEC", 105, 42, { align: 'center' });
             
             doc.setFontSize(10); 
             doc.setTextColor(100);
             doc.setFont(undefined, 'normal');
-            const inicio = document.getElementById('dataInicio').value;
-            const fim = document.getElementById('dataFim').value;
-            doc.text(`Período: ${formatarDataPT(inicio)} a ${formatarDataPT(fim)}`, 105, 26, { align: 'center' });
+            doc.text(`Período: ${formatarDataPT(inicio)} até ${formatarDataPT(fim)}`, 105, 48, { align: 'center' });
         }
     }
 
-    drawHeader(doc);
+    drawHeader(doc, true);
 
-    // --- DADOS ---
     const totalFinalizados = dadosRelatorio.atendidos + dadosRelatorio.nao_compareceu;
     const pAtendidos = totalFinalizados > 0 ? ((dadosRelatorio.atendidos / totalFinalizados) * 100).toFixed(1) : 0;
     const pFaltas = totalFinalizados > 0 ? ((dadosRelatorio.nao_compareceu / totalFinalizados) * 100).toFixed(1) : 0;
@@ -259,140 +259,104 @@ async function baixarPDF() {
     const pInterior = totalGeral > 0 ? ((dadosRelatorio.regiao.interior / totalGeral) * 100).toFixed(1) : 0;
     const pMetropolitana = totalGeral > 0 ? ((dadosRelatorio.regiao.metropolitana / totalGeral) * 100).toFixed(1) : 0;
 
-    const cardY = 32;
-    const cardHeight = 100; 
+    const cardY = 58; 
+    const cardHeight = 95; 
     const cardWidth = 88;
-    const card1X = 14;
-    const card2X = 108; 
+    const card1X = 15;
+    const card2X = 107;
 
-    // Configuração da Borda Leve
-    doc.setDrawColor(220); 
-    doc.setLineWidth(0.5);
+    doc.setDrawColor(230); 
+    doc.setLineWidth(0.3);
 
-    // --- CARD 1: STATUS ---
     doc.roundedRect(card1X, cardY, cardWidth, cardHeight, 3, 3, 'S');
-    
-    // Título
     doc.setFontSize(11);
     doc.setTextColor(0, 102, 204); 
     doc.setFont(undefined, 'bold');
-    doc.text("Status dos Atendimentos", card1X + (cardWidth / 2), cardY + 10, { align: 'center' });
+    doc.text("Status dos Atendimentos", card1X + (cardWidth / 2), cardY + 8, { align: 'center' });
 
     try {
-        const imgStatus = document.getElementById('chartStatus').toDataURL('image/png');
-        const ratioStatus = document.getElementById('chartStatus').height / document.getElementById('chartStatus').width;
-        const imgW = 55; 
-        const imgH = imgW * ratioStatus;
-        doc.addImage(imgStatus, 'PNG', card1X + (cardWidth - imgW) / 2, cardY + 15, imgW, imgH);
+        const canvasStatus = document.getElementById('chartStatus');
+        const imgStatus = canvasStatus.toDataURL('image/png');
+        const ratio = canvasStatus.height / canvasStatus.width;
+        const imgW = 45; 
+        const imgH = imgW * ratio;
+        doc.addImage(imgStatus, 'PNG', card1X + (cardWidth - imgW) / 2, cardY + 12, imgW, imgH);
     } catch(e){}
 
-    // Legenda
-    const legendY = cardY + 75;
+    const legY = cardY + 68;
     doc.setFontSize(9);
-    
-    // Item 1: Atendidos (Quadrado Verde)
-    doc.setFillColor(40, 167, 69); 
-    doc.rect(card1X + 5, legendY - 2.5, 3, 3, 'F'); 
-    doc.setTextColor(80); 
-    doc.setFont(undefined, 'normal');
-    doc.text("Atendidos:", card1X + 10, legendY);
-    doc.text(`${dadosRelatorio.atendidos} (${pAtendidos}%)`, card1X + cardWidth - 5, legendY, {align:'right'});
+    doc.setFillColor(40, 167, 69);
+    doc.rect(card1X + 8, legY - 2.5, 3, 3, 'F');
+    doc.setTextColor(80); doc.setFont(undefined, 'normal');
+    doc.text(`Atendidos: ${dadosRelatorio.atendidos} (${pAtendidos}%)`, card1X + 13, legY);
 
-    // Item 2: Não Compareceu (Quadrado Vermelho)
     doc.setFillColor(220, 53, 69);
-    doc.rect(card1X + 5, legendY + 3.5, 3, 3, 'F');
-    doc.text("Não Compareceu:", card1X + 10, legendY + 6);
-    doc.text(`${dadosRelatorio.nao_compareceu} (${pFaltas}%)`, card1X + cardWidth - 5, legendY + 6, {align:'right'});
+    doc.rect(card1X + 8, legY + 3.5, 3, 3, 'F');
+    doc.text(`Não Compareceu: ${dadosRelatorio.nao_compareceu} (${pFaltas}%)`, card1X + 13, legY + 6);
 
-    // Total
+    doc.setFont(undefined, 'bold'); doc.setTextColor(30);
+    doc.text(`Total: ${dadosRelatorio.total}`, card1X + 8, legY + 15);
+
     doc.setDrawColor(230);
-    doc.line(card1X + 5, legendY + 10, card1X + cardWidth - 5, legendY + 10);
-    doc.setTextColor(0); 
-    doc.setFont(undefined, 'bold');
-    doc.text("Total:", card1X + 5, legendY + 16);
-    doc.text(`${dadosRelatorio.total}`, card1X + cardWidth - 5, legendY + 16, {align:'right'});
-
-    // --- CARD 2: REGIÃO ---
-    doc.setDrawColor(220);
     doc.roundedRect(card2X, cardY, cardWidth, cardHeight, 3, 3, 'S');
-
-    // Título
     doc.setTextColor(0, 102, 204); 
-    doc.setFont(undefined, 'bold');
-    doc.text("Distribuição por Região", card2X + (cardWidth / 2), cardY + 10, { align: 'center' });
+    doc.text("Distribuição por Região", card2X + (cardWidth / 2), cardY + 8, { align: 'center' });
 
-    // Imagem (AUMENTADA)
     try {
-        const imgRegiao = document.getElementById('chartRegiao').toDataURL('image/png');
-        const ratioRegiao = document.getElementById('chartRegiao').height / document.getElementById('chartRegiao').width;
-        const imgW = 55; // Aumentado
-        const imgH = imgW * ratioRegiao;
-        doc.addImage(imgRegiao, 'PNG', card2X + (cardWidth - imgW) / 2, cardY + 15, imgW, imgH);
+        const canvasRegiao = document.getElementById('chartRegiao');
+        const imgRegiao = canvasRegiao.toDataURL('image/png');
+        const ratio = canvasRegiao.height / canvasRegiao.width;
+        const imgW = 45;
+        const imgH = imgW * ratio;
+        doc.addImage(imgRegiao, 'PNG', card2X + (cardWidth - imgW) / 2, cardY + 12, imgW, imgH);
     } catch(e){}
 
-    // Legenda
-    doc.setFontSize(9);
-
-    // Capital (Quadrado Roxo)
     doc.setFillColor(153, 102, 255);
-    doc.rect(card2X + 5, legendY - 2.5, 3, 3, 'F');
-    doc.setTextColor(80); 
-    doc.setFont(undefined, 'normal');
-    doc.text("Capital:", card2X + 10, legendY);
-    doc.text(`${dadosRelatorio.regiao.capital} (${pCapital}%)`, card2X + cardWidth - 5, legendY, {align:'right'});
+    doc.rect(card2X + 8, legY - 2.5, 3, 3, 'F');
+    doc.setTextColor(80); doc.setFont(undefined, 'normal');
+    doc.text(`Capital: ${dadosRelatorio.regiao.capital} (${pCapital}%)`, card2X + 13, legY);
 
-    // Interior (Quadrado Laranja)
     doc.setFillColor(255, 159, 64);
-    doc.rect(card2X + 5, legendY + 3.5, 3, 3, 'F');
-    doc.text("Interior:", card2X + 10, legendY + 6);
-    doc.text(`${dadosRelatorio.regiao.interior} (${pInterior}%)`, card2X + cardWidth - 5, legendY + 6, {align:'right'});
+    doc.rect(card2X + 8, legY + 3.5, 3, 3, 'F');
+    doc.text(`Interior: ${dadosRelatorio.regiao.interior} (${pInterior}%)`, card2X + 13, legY + 6);
 
-    // Metropolitana (Quadrado Verde Água)
     doc.setFillColor(75, 192, 192);
-    doc.rect(card2X + 5, legendY + 9.5, 3, 3, 'F');
-    doc.text("Metropolitana:", card2X + 10, legendY + 12);
-    doc.text(`${dadosRelatorio.regiao.metropolitana} (${pMetropolitana}%)`, card2X + cardWidth - 5, legendY + 12, {align:'right'});
+    doc.rect(card2X + 8, legY + 9.5, 3, 3, 'F');
+    doc.text(`Metropolitana: ${dadosRelatorio.regiao.metropolitana} (${pMetropolitana}%)`, card2X + 13, legY + 12);
 
-    // Total
-    doc.setDrawColor(230);
-    doc.line(card2X + 5, legendY + 16, card2X + cardWidth - 5, legendY + 16);
-    doc.setTextColor(0); 
-    doc.setFont(undefined, 'bold');
-    doc.text("Total:", card2X + 5, legendY + 22);
-    doc.text(`${dadosRelatorio.total}`, card2X + cardWidth - 5, legendY + 22, {align:'right'});
+    doc.setFont(undefined, 'bold'); doc.setTextColor(30);
+    doc.text(`Total: ${dadosRelatorio.total}`, card2X + 8, legY + 20);
 
-    // --- TABELAS ---
-    let finalY = cardY + cardHeight + 10;
+    let finalY = cardY + cardHeight + 15;
     const agendamentosPorDia = agruparPorData(dadosRelatorio.lista_detalhada);
 
     for (const [data, lista] of Object.entries(agendamentosPorDia)) {
-        if (finalY > 250) { 
+        if (finalY > 260) { 
             doc.addPage(); 
             drawHeader(doc, false);
-            finalY = 35; 
+            finalY = 45; 
         }
         
-        doc.setFillColor(233, 236, 239);
-        doc.rect(14, finalY - 4, 182, 7, 'F'); 
+        doc.setFillColor(240, 242, 245);
+        doc.rect(15, finalY - 5, 180, 8, 'F');
         doc.setFillColor(0, 102, 204);
-        doc.rect(14, finalY - 4, 2, 7, 'F');
+        doc.rect(15, finalY - 5, 2, 8, 'F');
         doc.setFontSize(10); 
-        doc.setTextColor(73, 80, 87);
+        doc.setTextColor(50);
         doc.setFont(undefined, 'bold');
-        doc.text(data, 19, finalY + 1);
-        doc.setFont(undefined, 'normal');
+        doc.text(data, 20, finalY + 1);
         
         const body = lista.map(item => [item.hora, item.nome_beneficiario, item.numero_cartao, item.regiao, item.status]);
 
         doc.autoTable({
-            startY: finalY + 4,
+            startY: finalY + 5,
             head: [['Horário', 'Nome', 'Carteira', 'Região', 'Status']],
             body: body,
             theme: 'grid',
-            headStyles: { fillColor: [248, 249, 250], textColor: [50, 50, 50], fontStyle: 'bold' },
-            styles: { fontSize: 8, cellPadding: 2 },
-            margin: { top: 60, left: 14, right: 14 }, 
-            columnStyles: { 0: { cellWidth: 15 }, 4: { fontStyle: 'bold' } },
+            headStyles: { fillColor: [248, 249, 250], textColor: [50, 50, 50], fontStyle: 'bold', fontSize: 9 },
+            styles: { fontSize: 8.5, cellPadding: 3 },
+            margin: { left: 15, right: 15 },
+            columnStyles: { 0: { cellWidth: 18 }, 4: { fontStyle: 'bold' } },
             didParseCell: function(data) {
                 if (data.section === 'body' && data.column.index === 4) {
                     if (data.cell.raw === 'Não Compareceu') data.cell.styles.textColor = [220, 53, 69];
@@ -400,22 +364,14 @@ async function baixarPDF() {
                 }
             }
         });
-        finalY = doc.lastAutoTable.finalY + 12;
+        finalY = doc.lastAutoTable.finalY + 15; 
     }
 
-    // Rodapés
     const pageCount = doc.internal.getNumberOfPages();
     for(let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        
         doc.setFontSize(8); 
         doc.setTextColor(150);
-        if (i === pageCount) {
-            const rodapeL1 = "Av. Santos Dumont, 5335 (11º andar) - Papicu, Fortaleza - CE, CEP 60175-047";
-            const rodapeL2 = "Telefone: 0800 022 4050 | E-mail: pericia.issec@maida.health";
-            doc.text(rodapeL1, 105, 285, { align: 'center' });
-            doc.text(rodapeL2, 105, 289, { align: 'center' });
-        }
         doc.text(`Página ${i} de ${pageCount}`, 195, 290, { align: 'right' });
     }
 
