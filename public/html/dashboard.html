@@ -2,6 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; 
+        script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net;
+        img-src 'self' data: http://*.googleusercontent.com https://*.googleusercontent.com https://googleusercontent.com http://googleusercontent.com https://lh3.googleusercontent.com; 
+        connect-src 'self' http://localhost:3000 https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com;
+    ">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Maida</title>
     <link rel="stylesheet" href="../css/index.css">
@@ -22,6 +28,9 @@
 
         <div class="user-info">
             <a href="index.html" class="btn-voltar">← Voltar ao Painel</a>
+            <div id="user-photo-container" class="user-photo-container" style="display: none;">
+                <img id="user-photo" class="user-photo" src="" alt="" referrerpolicy="no-referrer">
+            </div>
             <button onclick="logout()" class="btn-logout" title="Sair do Sistema">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

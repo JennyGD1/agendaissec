@@ -24,6 +24,23 @@ async function verificarAcesso() {
             window.location.href = 'index.html';
             return;
         }
+
+        const displayEl = document.getElementById('user-display');
+        const photoEl = document.getElementById('user-photo');
+        const photoContainerEl = document.getElementById('user-photo-container');
+
+        if (displayEl) displayEl.textContent = data.email;
+
+        if (photoEl && photoContainerEl) {
+            const urlFoto = data.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            
+            photoEl.src = urlFoto;
+            photoContainerEl.style.display = 'flex';
+
+            photoEl.onerror = function() {
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            };
+        }
         
         const hoje = new Date().toISOString().split('T')[0];
         document.getElementById('dataInicio').value = hoje;

@@ -15,9 +15,41 @@ async function iniciar() {
     document.getElementById('dataFim').value = ultimoDia.toISOString().split('T')[0];
 
     firebase.auth().onAuthStateChanged(async (user) => {
-        if (user) currentUserToken = await user.getIdToken();
-        else window.location.href = 'login.html';
+        if (user) {
+            currentUserToken = await user.getIdToken();
+            carregarPerfilUsuario();
+        } else {
+            window.location.href = 'login.html';
+        }
     });
+}
+
+async function carregarPerfilUsuario() {
+    try {
+        const response = await fetch('/api/me', {
+            headers: { 'Authorization': `Bearer ${currentUserToken}` }
+        });
+        const data = await response.json();
+
+        const displayEl = document.getElementById('user-display');
+        const photoEl = document.getElementById('user-photo');
+        const photoContainerEl = document.getElementById('user-photo-container');
+
+        if (displayEl) displayEl.textContent = data.email;
+
+        if (photoEl && photoContainerEl) {
+            const urlFoto = data.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            
+            photoEl.src = urlFoto;
+            photoContainerEl.style.display = 'flex';
+
+            photoEl.onerror = function() {
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            };
+        }
+    } catch (e) {
+        console.error("Erro ao carregar perfil:", e);
+    }
 }
 
 async function buscarDados() {

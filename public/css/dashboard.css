@@ -117,7 +117,7 @@ canvas {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: inline-flex;
     align-items: center;
-    margin-right: 15px; /* Espaçamento para o user-info */
+    margin-right: 15px; 
 }
 
 .btn-voltar:hover { 
@@ -125,4 +125,35 @@ canvas {
     text-decoration: none; 
     transform: translateY(-1px); 
     color: white;
+}
+/* --- ESTILOS DA FOTO GIRATÓRIA --- */
+
+@keyframes spin-border {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.user-photo-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-right: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    background-image: url('../img/circulo.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    animation: spin-border 4s linear infinite;
+}
+
+.user-photo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    animation: spin-border 4s linear reverse infinite;
 }

@@ -99,13 +99,17 @@ const verificarPermissao = (cargosPermitidos) => {
 app.get('/api/me', verificarAuth, (req, res) => {
     const email = req.user.email;
     let role = 'guest';
+    let foto = req.user.picture;
+    if (foto && foto.startsWith('http:')) {
+        foto = foto.replace('http:', 'https:');
+    }
 
     if (ADMIN_EMAILS.includes(email)) role = 'admin';
     else if (RECEPCAO_EMAILS.includes(email)) role = 'recepcao';
     else if (CLIENT_EMAILS.includes(email)) role = 'cliente';
     else if (email.endsWith('@maida.health')) role = 'call_center';
 
-    res.json({ email, role });
+    res.json({ email, role, foto });
 });
 
 app.get('/api/firebase-config', (req, res) => {

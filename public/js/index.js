@@ -39,6 +39,26 @@ async function checarPermissoes() {
         
         document.getElementById('user-display').textContent = data.email;
 
+        const photoEl = document.getElementById('user-photo');
+        const photoContainerEl = document.getElementById('user-photo-container');
+
+        if (photoEl && data.foto) {
+            photoEl.src = data.foto;
+            
+            if (photoContainerEl) {
+                photoContainerEl.style.display = 'flex'; 
+            }
+
+            // Plano B: Se a foto do Google falhar, gera o avatar com iniciais
+            photoEl.onerror = function() {
+                console.warn("Falha ao carregar foto do Google, usando iniciais.");
+                this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.email) + '&background=0066cc&color=fff';
+            };
+        } else if (photoEl && photoContainerEl) {
+            // Caso o usuário não tenha foto no Gmail, já carrega as iniciais direto
+            photoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.email) + '&background=0066cc&color=fff';
+            photoContainerEl.style.display = 'flex';
+        }
         aplicarRestricoesVisuais();
         carregarAgendamentos();
         

@@ -27,8 +27,26 @@ async function checarPermissoes() {
         const data = await response.json();
         userRole = data.role;
         
+        const displayEl = document.getElementById('user-display');
+        const photoEl = document.getElementById('user-photo');
+        const photoContainerEl = document.getElementById('user-photo-container');
+
+        if (displayEl) displayEl.textContent = data.email;
+
+        if (photoEl && photoContainerEl) {
+            const urlFoto = data.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            
+            photoEl.src = urlFoto;
+            photoContainerEl.style.display = 'flex';
+
+            photoEl.onerror = function() {
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
+            };
+        }
+        
         carregarPericias();
     } catch (error) {
+        console.error("Erro ao verificar permissões:", error);
         logout();
     }
 }
