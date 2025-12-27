@@ -4,14 +4,14 @@ async function iniciar() {
         const config = await res.json();
         if (!firebase.apps.length) firebase.initializeApp(config);
         firebase.auth().onAuthStateChanged(user => {
-            if (user) verificarAcesso();
+            if (user) checarPermissoes();
             else window.location.href = 'login.html';
         });
     } catch (e) { console.error("Erro config:", e); }
 }
 iniciar();
 
-async function verificarAcesso() {
+async function checarPermissoes() {
     const token = localStorage.getItem('maida_token');
     if (!token) return window.location.href = 'login.html';
 

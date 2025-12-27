@@ -10,6 +10,7 @@ const admin = require('firebase-admin');
 const ADMIN_EMAILS = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim()) : [];
 const RECEPCAO_EMAILS = process.env.RECEPCAO_EMAILS ? process.env.RECEPCAO_EMAILS.split(',').map(e => e.trim()) : [];
 const CLIENT_EMAILS = process.env.CLIENT_EMAILS ? process.env.CLIENT_EMAILS.split(',').map(e => e.trim()) : [];
+const CALL_CENTER_EMAILS = process.env.CALL_CENTER_EMAILS ? process.env.CALL_CENTER_EMAILS.split(',').map(e => e.trim()) : [];
 
 try {
     if (process.env.FIREBASE_PRIVATE_KEY) {
@@ -52,6 +53,7 @@ const verificarAuth = async (req, res, next) => {
 
         const isAdmin = ADMIN_EMAILS.includes(userEmail);
         const isRecepcao = RECEPCAO_EMAILS.includes(userEmail);
+        
         const isClient = CLIENT_EMAILS.includes(userEmail);
         const isMaida = userEmail.endsWith('@maida.health');
 
@@ -62,9 +64,12 @@ const verificarAuth = async (req, res, next) => {
         let role = 'guest';
         if (ADMIN_EMAILS.includes(userEmail)) role = 'admin';
         else if (RECEPCAO_EMAILS.includes(userEmail)) role = 'recepcao';
+        else if (CALL_CENTER_EMAILS.includes(userEmail)) role = 'call_center';
         else if (isClient) role = 'cliente';
-        else if (isMaida) role = 'call_center';
-        
+        else if (isMaida) role = 'maida_viewer';
+        if (role === 'guest' && !isMaida) {
+            return res.status(403).json({ error: 'Usuário não autorizado.' });
+        }
         req.user = { ...decodedToken, role };
         next();
     } catch (error) {
@@ -75,20 +80,7 @@ const verificarAuth = async (req, res, next) => {
 
 const verificarPermissao = (cargosPermitidos) => {
     return (req, res, next) => {
-        const email = req.user.email;
-        let cargo = 'indefinido';
-
-        if (ADMIN_EMAILS.includes(email)) {
-            cargo = 'admin';
-        } else if (RECEPCAO_EMAILS.includes(email)) {
-            cargo = 'recepcao';
-        } else if (CLIENT_EMAILS.includes(email)) {
-            cargo = 'cliente';
-        } else if (email.endsWith('@maida.health')) {
-            cargo = 'call_center';
-        }
-
-        req.user.cargo = cargo;
+        const cargo = req.user.role; 
 
         if (cargosPermitidos.includes(cargo)) {
             return next();
@@ -99,19 +91,11 @@ const verificarPermissao = (cargosPermitidos) => {
 };
 
 app.get('/api/me', verificarAuth, (req, res) => {
-    const email = req.user.email;
-    let role = 'guest';
-    let foto = req.user.picture;
-    if (foto && foto.startsWith('http:')) {
-        foto = foto.replace('http:', 'https:');
-    }
-
-    if (ADMIN_EMAILS.includes(email)) role = 'admin';
-    else if (RECEPCAO_EMAILS.includes(email)) role = 'recepcao';
-    else if (CLIENT_EMAILS.includes(email)) role = 'cliente';
-    else if (email.endsWith('@maida.health')) role = 'call_center';
-
-    res.json({ email, role, foto });
+    res.json({ 
+        email: req.user.email, 
+        role: req.user.role, 
+        foto: req.user.picture ? req.user.picture.replace('http:', 'https:') : null 
+    });
 });
 
 app.get('/api/firebase-config', (req, res) => {
@@ -535,7 +519,7 @@ app.get('/api/alertas/pendencias', verificarAuth, verificarPermissao(['admin', '
     }
 });
 
-app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao', 'call_center', 'cliente']), async (req, res) => {
+app.get('/api/relatorios', verificarAuth, verificarPermissao(['admin', 'recepcao', 'cliente']), async (req, res) => {
     const { inicio, fim } = req.query;
 
     if (!inicio || !fim) {
@@ -615,7 +599,7 @@ app.get('/api/dashboard-stats', verificarAuth, verificarPermissao(['admin', 'rec
         const [resultAgendamentos, resultCancelamentos, resultPericia] = await Promise.all([
             pool.query(queryAgendamentos, [inicio, fim]),
             pool.query(queryCancelamentos, [inicio, fim]),
-            pool.query(queryPericia, [inicio, fim]) // Executa a nova consulta
+            pool.query(queryPericia, [inicio, fim])
         ]);
         
 

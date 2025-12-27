@@ -1,4 +1,4 @@
-async function verificarAcessoRestrito() {
+async function checarPermissoes() {
     const token = localStorage.getItem('maida_token');
     if (!token) window.location.href = 'login.html';
 
@@ -8,8 +8,8 @@ async function verificarAcessoRestrito() {
         });
         const data = await response.json();
         
-        if (data.role === 'cliente') {
-            alert("Acesso não autorizado para este perfil.");
+        if (data.role === 'cliente' || data.role === 'maida_viewer') {
+            alert("Acesso não autorizado.");
             window.location.href = 'index.html';
             return; 
         }
@@ -30,13 +30,18 @@ async function verificarAcessoRestrito() {
                 this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
             };
         }
+        if (data.role === 'cliente' || data.role === 'maida_viewer') {
+            alert("Acesso não autorizado para este perfil.");
+            window.location.href = 'index.html';
+            return; 
+        }
 
     } catch (error) {
         console.error("Erro ao verificar acesso:", error);
     }
 }
 
-verificarAcessoRestrito();
+checarPermissoes();
 
 function logout() { 
     localStorage.clear(); 

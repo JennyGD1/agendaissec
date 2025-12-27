@@ -17,14 +17,14 @@ async function iniciar() {
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
             currentUserToken = await user.getIdToken();
-            carregarPerfilUsuario();
+            checarPermissoes();
         } else {
             window.location.href = 'login.html';
         }
     });
 }
 
-async function carregarPerfilUsuario() {
+async function checarPermissoes() {
     try {
         const response = await fetch('/api/me', {
             headers: { 'Authorization': `Bearer ${currentUserToken}` }
@@ -46,6 +46,10 @@ async function carregarPerfilUsuario() {
             photoEl.onerror = function() {
                 this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
             };
+        }
+        if (data.role === 'maida_viewer' || data.role === 'call_center') {
+            window.location.href = 'index.html';
+            return;
         }
     } catch (e) {
         console.error("Erro ao carregar perfil:", e);

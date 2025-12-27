@@ -25,10 +25,10 @@ if (!token) {
     document.getElementById('dataInicio').value = primeiroDia.toISOString().split('T')[0];
     document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
 
-    verificarPermissaoDashboard();
+    checarPermissoes();
 }
 
-async function verificarPermissaoDashboard() {
+async function checarPermissoes() {
     try {
         const response = await fetch('/api/me', {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -56,7 +56,7 @@ async function verificarPermissaoDashboard() {
             };
         }
 
-        if (userRole === 'call_center' || userRole === 'guest') {
+        if (userRole === 'call_center' || userRole === 'maida_viewer' || userRole === 'guest') {
             alert('Acesso não autorizado para este perfil.');
             window.location.href = 'index.html';
             return;

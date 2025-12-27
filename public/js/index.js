@@ -49,13 +49,11 @@ async function checarPermissoes() {
                 photoContainerEl.style.display = 'flex'; 
             }
 
-            // Plano B: Se a foto do Google falhar, gera o avatar com iniciais
             photoEl.onerror = function() {
                 console.warn("Falha ao carregar foto do Google, usando iniciais.");
                 this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.email) + '&background=0066cc&color=fff';
             };
         } else if (photoEl && photoContainerEl) {
-            // Caso o usuário não tenha foto no Gmail, já carrega as iniciais direto
             photoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.email) + '&background=0066cc&color=fff';
             photoContainerEl.style.display = 'flex';
         }
@@ -73,28 +71,19 @@ async function checarPermissoes() {
 
 function aplicarRestricoesVisuais() {
     const linkAgendar = document.querySelector('nav a[href="agendar.html"]');
-    const linkPericia = document.querySelector('nav a[href="periciadocumental.html"]'); 
     const linkGerenciar = document.getElementById('link-gerenciar');
-    const menuFuncoes = document.getElementById('menu-funcoes');
     const btnEncaixe = document.getElementById('btnEncaixe');
 
     if(linkAgendar) linkAgendar.style.display = 'none';
-    if(linkPericia) linkPericia.style.display = 'none'; 
     if(linkGerenciar) linkGerenciar.style.display = 'none';
-    if(menuFuncoes) menuFuncoes.style.display = 'none';
     if(btnEncaixe) btnEncaixe.style.display = 'none';
 
-    if (userRole === 'cliente') {
-        if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
-    }
-    else if (userRole === 'call_center') {
+    if (userRole === 'call_center') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
-    }
+    } 
     else if (userRole === 'admin' || userRole === 'recepcao') {
         if(linkAgendar) linkAgendar.style.display = 'inline-block';
-        if(linkPericia) linkPericia.style.display = 'block'; 
         if(linkGerenciar) linkGerenciar.style.display = 'inline-block';
-        if(menuFuncoes) menuFuncoes.style.display = 'inline-block';
         if(btnEncaixe) btnEncaixe.style.display = 'flex';
     }
 }

@@ -43,7 +43,10 @@ async function checarPermissoes() {
                 this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.email)}&background=0066cc&color=fff`;
             };
         }
-        
+        if (data.role === 'maida_viewer' || data.role === 'call_center') {
+            window.location.href = 'index.html';
+            return;
+        }
         carregarPericias();
     } catch (error) {
         console.error("Erro ao verificar permissões:", error);
